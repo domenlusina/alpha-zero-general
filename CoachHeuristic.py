@@ -10,7 +10,7 @@ import numpy as np
 from Arena import Arena
 from MCTS import MCTS
 from pytorch_classification.utils import Bar, AverageMeter
-
+from connect4.Connect4Heuristics import heuristic2_prob
 
 class Coach():
     """
@@ -58,10 +58,21 @@ class Coach():
             for b, p in sym:
                 trainExamples.append([b, self.curPlayer, p, None])
 
-            if np.random.ranf(1)[0] > self.args.heuristic_probability:
-                action = np.random.choice(len(pi), p=pi)
+            if self.args.heuristic_type == 'combined':
+                h_prob = heuristic2_prob(board)
+                new_pi = (np.array(pi) + h_prob)/2
+                action = np.random.choice(len(new_pi), p=new_pi)
             else:
-                action = self.args.heuristic_function(board)
+                if self.args.heuristic_type == 'cooling':
+                    prob = self.args.heuristic_probability - (episodeStep - 1) * self.args.heuristic_probability / 42
+                elif self.args.heuristic_type == 'normal':
+                    prob = self.args.heuristic_probability
+
+                if np.random.ranf(1)[0] > prob:
+                    action = np.random.choice(len(pi), p=pi)
+                else:
+                    action = self.args.heuristic_function(board)
+
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
             r = self.game.getGameEnded(board, self.curPlayer)

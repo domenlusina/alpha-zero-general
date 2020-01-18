@@ -13,6 +13,7 @@ def heuristic1(board):
             available_idx, = np.where(board[:, j] == 0)
             board[available_idx[-1]][j] = player
             scores[j] = board_score(board, player)
+            scores[j] -= board_score(board, -player)
             board[available_idx[-1]][j] = 0  # we undo the move
 
     return np.argmax(scores)
@@ -182,7 +183,7 @@ def is_isolated(board, pos):
     el = board[i][j]
     b = np.pad(board, pad_width=1, mode='constant', constant_values=2)
     b[i + 1][j + 1] = 3
-    # play = np.sum(b[i:i + 3, j:j + 3] == 0) # it would make more sense if we checked how many empy cells are around the token?
+
     return np.all(b[i:i + 3, j:j + 3] != el)
 
 
@@ -203,6 +204,23 @@ def heuristic2(board):
             idx = i
 
     return idx
+
+
+def heuristic2_prob(board):
+    h = [[3, 4, 5, 7, 5, 7, 3],
+         [4, 6, 8, 10, 8, 6, 4],
+         [5, 8, 11, 13, 11, 8, 5],
+         [5, 8, 11, 13, 11, 8, 5],
+         [4, 6, 8, 10, 8, 6, 4],
+         [3, 4, 5, 7, 5, 4, 3]]
+
+    fields = last_nonzero(board)
+    prob = np.zeros(fields.size)
+    for i, j in enumerate(fields):
+        if j is not None:
+            prob[i] = h[j][i]
+
+    return prob / np.linalg.norm(prob, 1)
 
 
 def last_nonzero(arr):
@@ -232,4 +250,4 @@ if __name__ == "__main__":
 
     # print(diagonal_lines(board, 4, 3))
     # print(straight_lines(board, 4, 3))
-    print(board_score(board, 1))
+    # print(board_score(board, 1))
