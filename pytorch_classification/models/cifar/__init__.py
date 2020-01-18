@@ -20,7 +20,7 @@ You can construct a model with random weights by calling its constructor:
     densenet = models.densenet_161()
 
 We provide pre-trained models for the ResNet variants and AlexNet, using the
-PyTorch :mod:`torch.utils.model_zoo`. These can  constructed by passing
+PyTorch :mod:`torch.utilities.model_zoo`. These can  constructed by passing
 ``pretrained=True``:
 
 .. code:: python

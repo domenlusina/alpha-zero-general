@@ -6,21 +6,20 @@ from __future__ import print_function
 
 import argparse
 import os
+import random
 import shutil
 import time
-import random
 
+import models.cifar as models
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data as data
-import torchvision.transforms as transforms
 import torchvision.datasets as datasets
-import models.cifar as models
-
-from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
+import torchvision.transforms as transforms
+from utilities import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
 
 model_names = sorted(name for name in models.__dict__

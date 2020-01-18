@@ -183,7 +183,7 @@ class Board:
 
     def _attack(self, x, y, n_x, n_y, config):
         """
-        Actor attacks new actor on other coordinate
+        Actor attacks new actor on utilities coordinate
         :param x: actor on coordinate x
         :param y: actor on coordinate y
         :param n_x: attack new actor on coordinate n_x
@@ -197,7 +197,7 @@ class Board:
 
     def _spawn(self, x, y, n_x, n_y, a_type, config):
         """
-        Actor spawns actor on other coordinate
+        Actor spawns actor on utilities coordinate
         :param x: coordinate of building that is spawning new actor
         :param y: coordinate of building that is spawning new actor
         :param n_x: coordinate where new actor will spawn to
@@ -209,7 +209,7 @@ class Board:
 
     def _heal(self, x, y, n_x, n_y, config):
         """
-        Actor heals actor on other coordinate
+        Actor heals actor on utilities coordinate
         :param x: coordinate of actor executing heal action
         :param y: oordinate of actor executing heal action
         :param n_x: coordinate of actor that will receive heal

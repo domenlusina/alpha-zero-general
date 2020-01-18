@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.append('../..')
 from rts.src.encoders import OneHotEncoder, NumericEncoder
-from utils import dotdict
+from utilities import dotdict
 
 # ####################################################################################
 # ###################### INITIAL CONFIGS AND OUTPUTS ##################################
@@ -600,12 +600,12 @@ class Configuration:
         :param money_increment_player1: How much money player should gain when worker returns gold coins
         :param initial_gold_player1: How much initial gold should player have
         :param maximum_gold_player1: Maximum gold for player (max allowed value is 255)
-        :param sacrificial_heal_player1: If actors can sacrifice their health to heal other actors if player doesn't have enough gold
-        :param heal_amount_player1: how much should action 'heal' heal other actor
+        :param sacrificial_heal_player1: If actors can sacrifice their health to heal utilities actors if player doesn't have enough gold
+        :param heal_amount_player1: how much should action 'heal' heal utilities actor
         :param heal_cost_player1: how much should action 'heal' cost gold coins. If sacrificial_heal is enabled, this is the amount that actors health will be reduced if player doesn't have enough gold
         :param use_timeout_player1: If timeout function should be used. If false, 'kill function' will be used
         :param max_time_player1: Maximum amount of time after which game ends and score is evaluated
-        :param damage_player1: How much damage is inflicted upon action 'attack' on other actor
+        :param damage_player1: How much damage is inflicted upon action 'attack' on utilities actor
         :param destroy_all_player1: If by executing action 'attack', all opponents actors are destroyed
         :param a_max_health_player1: dictionary of maximum amount of healths for each actor. See its default values to override
             ``
@@ -653,12 +653,12 @@ class Configuration:
         :param money_increment_player2: How much money player should gain when worker returns gold coins
         :param initial_gold_player2: How much initial gold should player have
         :param maximum_gold_player2: Maximum gold for player (max allowed value is 255)
-        :param sacrificial_heal_player2: If actors can sacrifice their health to heal other actors if player doesn't have enough gold
-        :param heal_amount_player2: how much should action 'heal' heal other actor
+        :param sacrificial_heal_player2: If actors can sacrifice their health to heal utilities actors if player doesn't have enough gold
+        :param heal_amount_player2: how much should action 'heal' heal utilities actor
         :param heal_cost_player2: how much should action 'heal' cost gold coins. If sacrificial_heal is enabled, this is the amount that actors health will be reduced if player doesn't have enough gold
         :param use_timeout_player2: If timeout function should be used. If false, 'kill function' will be used
         :param max_time_player2: Maximum amount of time after which game ends and score is evaluated
-        :param damage_player2: How much damage is inflicted upon action 'attack' on other actor
+        :param damage_player2: How much damage is inflicted upon action 'attack' on utilities actor
         :param destroy_all_player2: If by executing action 'attack', all opponents actors are destroyed
         :param a_max_health_player2: dictionary of maximum amout of healths for each actor. See its default values to override
             ``

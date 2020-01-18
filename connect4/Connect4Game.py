@@ -19,7 +19,7 @@ class Connect4Game(Game):
         return self._base_board.np_pieces
 
     def getBoardSize(self):
-        return (self._base_board.height, self._base_board.width)
+        return self._base_board.height, self._base_board.width
 
     def getActionSize(self):
         return self._base_board.width
@@ -32,7 +32,7 @@ class Connect4Game(Game):
 
     def getValidMoves(self, board, player):
         "Any zero value in top row in a valid move"
-        return self._base_board.with_np_pieces(np_pieces=board).get_valid_moves()
+        return self._base_board.with_np_pieces(np_pieces=board).get_legal_moves()
 
     def getGameEnded(self, board, player):
         b = self._base_board.with_np_pieces(np_pieces=board)
@@ -66,5 +66,9 @@ class Connect4Game(Game):
 def display(board):
     print(" -----------------------")
     print(' '.join(map(str, range(len(board[0])))))
+    if False:
+        board = np.where(board == 0, '.', board)
+        board = np.where(board == '1.0', 'X', board)
+        board = np.where(board == '-1.0', 'O', board)
     print(board)
     print(" -----------------------")

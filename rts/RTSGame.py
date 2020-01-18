@@ -111,9 +111,9 @@ class RTSGame:
     def getGameEnded(self, board: np.ndarray, player) -> float:
         """
         Ok, this function is where it gets complicated...
-        See, its  hard to decide when to finish rts game, as players might not have enough time to execute wanted actions, but in the other hand, if players are left to play for too long, games become very long, or even 'infinitely' long
+        See, its  hard to decide when to finish rts game, as players might not have enough time to execute wanted actions, but in the utilities hand, if players are left to play for too long, games become very long, or even 'infinitely' long
         Few different approaches have been used - one is with killer_function that is starting to gradually reduce health of players as the game progresses, so players that produce more units could live longer or players that attack enemy actors, could pull themselves in winning position, as enemy now has less health
-        And the other is using timeout. Timeout just cuts game and evaluates winner using one of 3 elo functions. We've found this one to be more useful, as it can be applied in 3d rts games easier and more sensibly.
+        And the utilities is using timeout. Timeout just cuts game and evaluates winner using one of 3 elo functions. We've found this one to be more useful, as it can be applied in 3d rts games easier and more sensibly.
         :param board: current game state
         :param player: current player
         :return: real number on interval [-1,1] - return 0 if not ended, 1 if player 1 won, -1 if player 1 lost, 0.001 if tie

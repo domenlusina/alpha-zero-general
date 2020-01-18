@@ -1,19 +1,17 @@
 import os
+import sys
 import time
 
 import chainer
 import chainer.functions as F
-from chainer import optimizers, cuda, serializers, training
-
 import numpy as np
-import sys
-
+from chainer import optimizers, cuda, serializers, training
 from chainer.dataset import concat_examples
 from chainer.iterators import SerialIterator
 from chainer.training import extensions
 
 sys.path.append('../../')
-from utils import dotdict
+from utilities import dotdict
 from NeuralNet import NeuralNet
 from .OthelloNNet import OthelloNNet as onnet
 

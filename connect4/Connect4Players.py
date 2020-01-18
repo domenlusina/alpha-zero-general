@@ -1,3 +1,5 @@
+from subprocess import run, PIPE
+
 import numpy as np
 
 
@@ -23,14 +25,61 @@ class HumanConnect4Player():
 
         while True:
             move = int(input())
-            if valid_moves[move]: break
-            else: print('Invalid move')
+            if valid_moves[move]:
+                break
+            else:
+                print('Invalid move')
         return move
+
+
+class EngineConnect4Player():
+    def __init__(self, game):
+        self.game = game
+        self.path = "C:\\Magistrsko_delo\\connect4\\bin\\best_move.exe"
+
+    def position_param(self, board):
+        no_moves = np.count_nonzero(board)
+
+        mask = ""
+        for i in range(board.shape[1]):
+            for x in range(board.shape[0]):
+                j = board.shape[0] - x - 1
+                if board[j, i] != 0:
+                    mask += "1"
+                else:
+                    mask += "0"
+            mask += "0"
+
+        mask = ''.join(reversed(mask))
+
+        current_position = ""
+        for i in range(board.shape[1]):
+            for x in range(board.shape[0]):
+                j = board.shape[0] - x - 1
+                if board[j, i] == 1:
+                    current_position += "1"
+                else:
+                    current_position += "0"
+            current_position += "0"
+
+        current_position = ''.join(reversed(current_position))
+
+        return int(current_position, 2), int(mask, 2), no_moves
+
+    def play(self, board):
+        param = self.position_param(board)
+        param = " ".join(map(str, param))
+
+        process = run(self.path, stdout=PIPE, input=(param + "\n").encode())
+        b_move = process.returncode
+
+        return b_move-1
 
 
 class OneStepLookaheadConnect4Player():
     """Simple player who always takes a win if presented, or blocks a loss if obvious, otherwise is random."""
-    def __init__(self, game, verbose=True):
+
+    def __init__(self, game, verbose=False):
         self.game = game
         self.player_num = 1
         self.verbose = verbose
@@ -59,6 +108,6 @@ class OneStepLookaheadConnect4Player():
             ret_move = np.random.choice(list(fallback_move_set))
             if self.verbose: print('Playing random action %s from %s' % (ret_move, fallback_move_set))
         else:
-            raise Exception('No valid moves remaining: %s' % game.stringRepresentation(board))
+            raise Exception('No valid moves remaining: %s' % self.game.stringRepresentation(board))
 
         return ret_move

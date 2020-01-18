@@ -1,14 +1,13 @@
+from utilities import *
+
 import Arena
-from MCTS import MCTS
 from tafl.TaflGame import TaflGame, display
 from tafl.TaflPlayers import *
+
 #from tafl.keras.NNet import NNetWrapper as NNet
 
-import numpy as np
-from utils import *
-
 """
-use this script to play any two agents against each other, or play manually with
+use this script to play any two agents against each utilities, or play manually with
 any agent.
 """
 

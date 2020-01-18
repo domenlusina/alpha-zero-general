@@ -8,13 +8,13 @@ import tensorflow as tf
 import unreal_engine as ue
 # noinspection PyUnresolvedReferences
 from TFPluginAPI import TFPluginAPI
+from utilities import dotdict
 
 from MCTS import MCTS
 from rts.RTSGame import RTSGame
 from rts.keras.NNet import NNetWrapper as NNet
 from rts.src.config import ACTS_REV, NUM_ACTS
 from rts.src.encoders import OneHotEncoder
-from utils import dotdict
 
 """
 rts_ue4.py

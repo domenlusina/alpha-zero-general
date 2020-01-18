@@ -58,7 +58,10 @@ class Coach():
             for b, p in sym:
                 trainExamples.append([b, self.curPlayer, p, None])
 
-            action = np.random.choice(len(pi), p=pi)
+            if np.random.ranf(1)[0] > self.args.heuristic_probability:
+                action = np.random.choice(len(pi), p=pi)
+            else:
+                action = self.args.heuristic_function(board)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
             r = self.game.getGameEnded(board, self.curPlayer)
@@ -66,7 +69,7 @@ class Coach():
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
 
-    def learn(self):
+    def learn(self, verbose=False):
         """
         Performs numIters iterations with numEps episodes of self-play in each
         iteration. After every iteration, it retrains neural network with
@@ -74,8 +77,11 @@ class Coach():
         It then pits the new neural network against the old one and accepts it
         only if it wins >= updateThreshold fraction of games.
         """
+        start_idx = 1
+        if self.args.load_model:
+            start_idx += self.args.checkpoint_index
 
-        for i in range(1, self.args.numIters + 1):
+        for i in range(start_idx, self.args.numIters + 1):
             # bookkeeping
             print('------ITER ' + str(i) + '------')
             # examples of the iteration
@@ -83,7 +89,8 @@ class Coach():
                 iterationTrainExamples = deque([], maxlen=self.args.maxlenOfQueue)
 
                 eps_time = AverageMeter()
-                bar = Bar('Self Play', max=self.args.numEps)
+                if verbose:
+                    bar = Bar('Self Play', max=self.args.numEps)
                 end = time.time()
 
                 for eps in range(self.args.numEps):
@@ -93,11 +100,13 @@ class Coach():
                     # bookkeeping + plot progress
                     eps_time.update(time.time() - end)
                     end = time.time()
-                    bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                        eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
-                        total=bar.elapsed_td, eta=bar.eta_td)
-                    bar.next()
-                bar.finish()
+                    if verbose:
+                        bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                            eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
+                            total=bar.elapsed_td, eta=bar.eta_td)
+                        bar.next()
+                if verbose:
+                    bar.finish()
 
                 # save the iteration examples to the history 
                 self.trainExamplesHistory.append(iterationTrainExamples)
@@ -153,6 +162,7 @@ class Coach():
     def loadTrainExamples(self):
         modelFile = os.path.join(self.args.load_folder_file[0], self.args.load_folder_file[1])
         examplesFile = modelFile + ".examples"
+
         if not os.path.isfile(examplesFile):
             print(examplesFile)
             r = input("File with trainExamples not found. Continue? [y|n]")

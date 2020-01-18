@@ -9,7 +9,7 @@ from rts.RTSGame import display, RTSGame
 """
 rts/pit.py
 
-Compares 2 players against each other and outputs num wins p1/ num wins p2/ draws
+Compares 2 players against each utilities and outputs num wins p1/ num wins p2/ draws
 """
 CONFIG.set_runner('pit')  # set visibility as pit
 g = RTSGame()

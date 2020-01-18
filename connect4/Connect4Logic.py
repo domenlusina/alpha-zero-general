@@ -33,7 +33,7 @@ class Board():
 
         self.np_pieces[available_idx[-1]][column] = player
 
-    def get_valid_moves(self):
+    def get_legal_moves(self):
         "Any zero value in top row in a valid move"
         return self.np_pieces[0] == 0
 
@@ -47,7 +47,7 @@ class Board():
                 return WinState(True, -player)
 
         # draw has very little value.
-        if not self.get_valid_moves().any():
+        if not self.get_legal_moves().any():
             return WinState(True, None)
 
         # Game is not ended yet.

@@ -1,8 +1,7 @@
 import sys
 sys.path.append('..')
-from utils import *
+from utilities import *
 
-import argparse
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
