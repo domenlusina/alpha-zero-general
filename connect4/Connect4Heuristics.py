@@ -15,7 +15,8 @@ def heuristic1(board):
             scores[j] = board_score(board, player)
             scores[j] -= board_score(board, -player)
             board[available_idx[-1]][j] = 0  # we undo the move
-
+        else:
+            scores[j] = -np.inf
     return np.argmax(scores)
 
 

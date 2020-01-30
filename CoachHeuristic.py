@@ -60,18 +60,24 @@ class Coach():
 
             if self.args.heuristic_type == 'combined':
                 h_prob = heuristic2_prob(board)
-                new_pi = (np.array(pi) + h_prob)/2
+                new_pi = (np.array(pi) + h_prob) / 2
                 action = np.random.choice(len(new_pi), p=new_pi)
-            else:
-                if self.args.heuristic_type == 'cooling':
-                    prob = self.args.heuristic_probability - (episodeStep - 1) * self.args.heuristic_probability / 42
-                elif self.args.heuristic_type == 'normal':
-                    prob = self.args.heuristic_probability
-
+            elif self.args.heuristic_type == 'cooling':
+                prob = self.args.heuristic_probability - (episodeStep - 1) * self.args.heuristic_probability / 42
                 if np.random.ranf(1)[0] > prob:
                     action = np.random.choice(len(pi), p=pi)
                 else:
                     action = self.args.heuristic_function(board)
+            elif self.args.heuristic_type == 'normal':
+                prob = self.args.heuristic_probability
+                if np.random.ranf(1)[0] > prob:
+                    action = np.random.choice(len(pi), p=pi)
+                else:
+                    action = self.args.heuristic_function(board)
+            elif self.args.heuristic_type == 'default':
+                action = np.random.choice(len(pi), p=pi)
+            else:
+                raise NameError("Wrong heuristic type '" + self.args.heuristic_type + "'")
 
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 

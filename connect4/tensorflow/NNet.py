@@ -11,6 +11,7 @@ from NeuralNet import NeuralNet
 
 import tensorflow as tf
 from .Connect4NNet import Connect4NNet as onnet
+tf.get_logger().setLevel('INFO')
 
 args = dotdict({
     'lr': 0.001,

@@ -1,4 +1,5 @@
 from collections import namedtuple
+
 import numpy as np
 
 DEFAULT_HEIGHT = 6
@@ -26,7 +27,7 @@ class Board():
             assert self.np_pieces.shape == (self.height, self.width)
 
     def add_stone(self, column, player):
-        "Create copy of board containing new stone."
+        "Execute a move in the column for a given player"
         available_idx, = np.where(self.np_pieces[:, column] == 0)
         if len(available_idx) == 0:
             raise ValueError("Can't play column %s on board %s" % (column, self))
@@ -42,8 +43,8 @@ class Board():
             player_pieces = self.np_pieces == -player
             # Check rows & columns for win
             if (self._is_straight_winner(player_pieces) or
-                self._is_straight_winner(player_pieces.transpose()) or
-                self._is_diagonal_winner(player_pieces)):
+                    self._is_straight_winner(player_pieces.transpose()) or
+                    self._is_diagonal_winner(player_pieces)):
                 return WinState(True, -player)
 
         # draw has very little value.
@@ -75,7 +76,22 @@ class Board():
         """Checks if player_pieces contains a vertical or horizontal win."""
         run_lengths = [player_pieces[:, i:i + self.win_length].sum(axis=1)
                        for i in range(len(player_pieces) - self.win_length + 2)]
-        return max([x.max() for x in run_lengths]) >= self.win_length
+
+        a = np.array(run_lengths)
+        return np.any(a >= self.win_length)
 
     def __str__(self):
         return str(self.np_pieces)
+
+
+"""
+t = time.time()
+x = 1000000
+for i in range(x):
+    a = np.random.choice([-1,0, 1], size=(6,7))
+    np.count_nonzero(a)
+t2 =  time.time()
+for i in range(x):
+    a = np.random.choice([-1,0, 1], size=(6,7))
+print(t2-t-(time.time()-t2))
+"""

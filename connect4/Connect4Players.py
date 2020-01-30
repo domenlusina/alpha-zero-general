@@ -1,5 +1,5 @@
 from subprocess import run, PIPE
-
+from connect4.Connect4Tree import best_move_alpha_beta
 import numpy as np
 
 
@@ -35,7 +35,7 @@ class HumanConnect4Player():
 class EngineConnect4Player():
     def __init__(self, game):
         self.game = game
-        self.path = "C:\\Magistrsko_delo\\connect4\\bin\\best_move.exe"
+        self.path = "..\\connect4\\bin\\best_move.exe"
 
     def position_param(self, board):
         no_moves = np.count_nonzero(board)
@@ -111,3 +111,16 @@ class OneStepLookaheadConnect4Player():
             raise Exception('No valid moves remaining: %s' % self.game.stringRepresentation(board))
 
         return ret_move
+
+
+class AlphaBetaConnect4Player():
+    def __init__(self, game, depth):
+        self.game = game
+        self.depth = depth
+
+    def play(self, board):
+        return best_move_alpha_beta(board, self.depth)
+
+
+
+

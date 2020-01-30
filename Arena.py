@@ -5,7 +5,7 @@ from pytorch_classification.utils import Bar, AverageMeter
 
 class Arena():
     """
-    An Arena class where any 2 agents can be pit against each utilities.
+    An Arena class where any 2 agents can be pit against each other.
     """
 
     def __init__(self, player1, player2, game, display=None):
@@ -18,7 +18,7 @@ class Arena():
                      mode.
 
         see othello/OthelloPlayers.py for an example. See pit.py for pitting
-        human players/utilities baselines with each utilities.
+        human players/other baselines with each other.
         """
         self.player1 = player1
         self.player2 = player2
@@ -70,7 +70,8 @@ class Arena():
             draws:  games won by nobody
         """
         eps_time = AverageMeter()
-        bar = Bar('Arena.playGames', max=num)
+        if verbose:
+            bar = Bar('Arena.playGames', max=num)
         end = time.time()
         eps = 0
         maxeps = int(num)
@@ -91,12 +92,13 @@ class Arena():
             eps += 1
             eps_time.update(time.time() - end)
             end = time.time()
-            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(eps=eps + 1,
-                                                                                                       maxeps=maxeps,
-                                                                                                       et=eps_time.avg,
-                                                                                                       total=bar.elapsed_td,
-                                                                                                       eta=bar.eta_td)
-            bar.next()
+            if verbose:
+                bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(eps=eps + 1,
+                                                                                                           maxeps=maxeps,
+                                                                                                           et=eps_time.avg,
+                                                                                                           total=bar.elapsed_td,
+                                                                                                           eta=bar.eta_td)
+                bar.next()
 
         self.player1, self.player2 = self.player2, self.player1
 
@@ -112,13 +114,14 @@ class Arena():
             eps += 1
             eps_time.update(time.time() - end)
             end = time.time()
-            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(eps=eps + 1,
-                                                                                                       maxeps=num,
-                                                                                                       et=eps_time.avg,
-                                                                                                       total=bar.elapsed_td,
-                                                                                                       eta=bar.eta_td)
-            bar.next()
-
-        bar.finish()
+            if verbose:
+                bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(eps=eps + 1,
+                                                                                                           maxeps=num,
+                                                                                                           et=eps_time.avg,
+                                                                                                           total=bar.elapsed_td,
+                                                                                                           eta=bar.eta_td)
+                bar.next()
+        if verbose:
+            bar.finish()
 
         return oneWon, twoWon, draws

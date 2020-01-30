@@ -2,12 +2,12 @@ import tensorflow as tf
 
 from CoachHeuristic import Coach
 from connect4.Connect4Game import Connect4Game
-from connect4.Connect4Heuristics import heuristic2
+from connect4.Connect4Heuristics import *
 from connect4.tensorflow.NNet import NNetWrapper as nn
 from utilities import dotdict
 
-folder = './temp_h2_cooling_70/'
-cp_idx = 50
+folder = './temp_h1_50/'
+cp_idx = 0
 
 args = dotdict({
     'numIters': 100,
@@ -25,9 +25,9 @@ args = dotdict({
     'load_folder_file': (folder, 'checkpoint_' + str(cp_idx) + '.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
-    'heuristic_probability': 0,
-    'heuristic_type': 'cooling',
-    'heuristic_function': heuristic2
+    'heuristic_probability': 0.5,
+    'heuristic_type': 'normal',
+    'heuristic_function': heuristic1
 })
 
 if __name__ == "__main__":

@@ -1,12 +1,16 @@
 import warnings
 
 warnings.filterwarnings('ignore', category=FutureWarning)
-from connect4.Connect4Game import Connect4Game
+from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
+from MCTS import MCTS
+import Arena
+from connect4.tensorflow.NNet import NNetWrapper as NNet
+from utilities import dotdict
 
 
 def get_files(path):
@@ -94,86 +98,62 @@ def display_graph(data, ind, save_path=None, title='Title', display=False):
 
     plt.clf()
 
+if __name__ == '__main__':
+    g = Connect4Game()
+    # all players
+    rp = RandomPlayer(g).play
+    osp = OneStepLookaheadConnect4Player(g).play
+    ep = EngineConnect4Player(g).play
 
-g = Connect4Game()
-# all players
-rp = RandomPlayer(g).play
-osp = OneStepLookaheadConnect4Player(g).play
-ep = EngineConnect4Player(g).play
+    rand_scores = []
+    ahead_scores = []
+    engine_scores = []
+    games = 100
 
-rand_scores = []
-ahead_scores = []
-engine_scores = []
-games = 100
+    results_folder = '.\\temp_h2_50\\'
+    files = get_files(results_folder)
+    files = sorted(files, key=lambda file: int(file[file.find('_') + 1: file.find('.')]))
+    ind = [int(file[file.find('_') + 1: file.find('.')]) for file in files]
 
-results_folder = '.\\temp_h2_50\\'
-files = get_files(results_folder)
-files = sorted(files, key=lambda file: int(file[file.find('_') + 1: file.find('.')]))
-ind = [int(file[file.find('_') + 1: file.find('.')]) for file in files]
+    save_folder = '.\\graphs\\' + results_folder[results_folder.find('_') + 1:]
+    if not os.path.exists(save_folder):
+        os.mkdir(save_folder)
 
-save_folder = '.\\graphs\\' + results_folder[results_folder.find('_') + 1:]
-if not os.path.exists(save_folder):
-    os.mkdir(save_folder)
+    for file in files:
+        print("Checkpoint", file)
+        # nnet players
+        n1 = NNet(g)
+        n1.load_checkpoint(results_folder, file)
+        args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1.0})
+        mcts1 = MCTS(g, n1, args1)
+        n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
 
-# TODO delete this and uncomment block below
-rand_scores = [[96, 4, 0] for i in
-               range(100)]  # [90, 10, 0], [80, 20, 0], [70, 30, 0], [60, 30, 10], [50, 40, 10], [30, 30, 40]]
-ahead_scores = [[76, 21, 3] for i in
-                range(100)]  # [76, 21, 3], [76, 21, 3], [76, 21, 3], [76, 21, 3], [76, 21, 3], [76, 21, 3]]
-engine_scores = [[0, 100, 0] for i in
-                 range(100)]  # [0, 100, 0], [0, 100, 0], [0, 100, 0], [0, 100, 0], [0, 100, 0], [0, 100, 0]]
-ind = list(range(1, 101))
+        arena = Arena.Arena(n1p, rp, g, display=display)
+        results = arena.playGames(games, verbose=False)
+        rand_scores.append(list(results))
 
+        arena = Arena.Arena(n1p, osp, g, display=display)
+        results = arena.playGames(games, verbose=False)
+        ahead_scores.append(list(results))
 
-"""
-for file in files:
-    print("Checkpoint", file)
-    # nnet players
-    n1 = NNet(g)
-    n1.load_checkpoint(results_folder, file)
-    args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1.0})
-    mcts1 = MCTS(g, n1, args1)
-    n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
+        arena = Arena.Arena(n1p, ep, g, display=display)
+        results = arena.playGames(games, verbose=False)
+        engine_scores.append(list(results))
 
-    arena = Arena.Arena(n1p, rp, g, display=display)
-    results = arena.playGames(games, verbose=False)
-    rand_scores.append(list(results))
+    print(rand_scores)
+    print()
 
-    arena = Arena.Arena(n1p, osp, g, display=display)
-    results = arena.playGames(games, verbose=False)
-    ahead_scores.append(list(results))
+    print(ahead_scores)
+    print()
 
-    arena = Arena.Arena(n1p, ep, g, display=display)
-    results = arena.playGames(games, verbose=False)
-    engine_scores.append(list(results))
+    print(engine_scores)
+    print()
 
-print(rand_scores)
-print()
+    display_graph(rand_scores, ind, save_path=save_folder + 'random.png', title='Playing against random player')
+    display_graph(ahead_scores, ind, save_path=save_folder + '1ahead.png', title='Playing against 1-lookahead player')
+    display_graph(engine_scores, ind, save_path=save_folder + 'engine.png', title='Playing against engine')
 
-print(ahead_scores)
-print()
-
-print(engine_scores)
-print()
-"""
-
-display_graph(rand_scores, ind, save_path=save_folder + 'random.png', title='Playing against random player')
-display_graph(ahead_scores, ind, save_path=save_folder + '1ahead.png', title='Playing against 1-lookahead player')
-display_graph(engine_scores, ind, save_path=save_folder + 'engine.png', title='Playing against engine')
-
-"""
-n2 = NNet(g)
-n2.load_checkpoint('./temp/', 'checkpoint_4.pth.tar')
-args2 = dotdict({'numMCTSSims': 25, 'cpuct': 1.0})
-mcts2 = MCTS(g, n2, args2)
-n2p = lambda x: np.argmax(mcts2.getActionProb(x, temp=0))
-"""
-
-"""
-print()
-print("Player1 won " + str(oneWon) + " games.")
-print()
-print("Player2 won " + str(twoWon) + " games.")
-print()
-print("There were " + str(draws) + " draws.")
-"""
+    with open(save_folder + 'results.txt', "w+") as f:
+        f.write(str(rand_scores) + '\n')
+        f.write(str(ahead_scores) + '\n')
+        f.write(str(engine_scores) + '\n')
