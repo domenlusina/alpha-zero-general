@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 sys.path.append('..')
-from utilities import *
+from utils import *
 from NeuralNet import NeuralNet
 
 from .GobangNNet import GobangNNet as onnet

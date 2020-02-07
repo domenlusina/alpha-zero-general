@@ -11,7 +11,7 @@ from MCTS import MCTS
 from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
 from connect4.tensorflow.NNet import NNetWrapper as NNet
-from utilities import dotdict
+from utils import dotdict
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 

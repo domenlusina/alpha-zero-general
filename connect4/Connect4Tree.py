@@ -70,9 +70,8 @@ def playable_row(board, col):
     return np.where(board[:, col] == 0)[0][-1]
 
 
-def minimax(node, depth, alpha, beta):
+def minimax(node, depth, alpha, beta, player):
     was_win = was_winning_move(node.board, node.move[0], node.move[1])
-    player = player2move(node.board)
     if was_win:
         node.value = -player
         return node.value
@@ -91,7 +90,7 @@ def minimax(node, depth, alpha, beta):
         child_node = Node(new_board, (row, col))
         node.children.append(child_node)
 
-        value = minimax(child_node, depth - 1, alpha, beta)
+        value = minimax(child_node, depth - 1, alpha, beta, -player)
 
         if player == 1:
             best_val = max(best_val, value)
@@ -109,8 +108,8 @@ def minimax(node, depth, alpha, beta):
 def best_move_alpha_beta(board, depth):
     board = board.astype(np.int8)
     root = Node(board, (-1, -1))
-    v = minimax(root, depth, -np.inf, np.inf)
-    moves=[]
+    v = minimax(root, depth, -np.inf, np.inf, 1)  # board is in canonical form
+    moves = []
 
     for child in root.children:
         if child.value == v:
@@ -125,17 +124,20 @@ if __name__ == "__main__":
     b[5][2] = 1
     # b[5][1] = 1
     b[4][3] = -1
+
     b = np.array([
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, -1, 0, 0, 0, -1, 0],
-        [0, 1, -1, 1, -1, 0, 0],
-        [0, 1, 1, -1, 0, 0, 0],
-        [1, 1, -1, 0, -1, 0, 0]])
+        [0, 0,  0,  0, 0, 0, 0],
+        [0, 0,  0,  0, 0, 0, 0],
+        [0, 0,  0,  0, 0, 0, 0],
+        [0, 0,  0,  0, 0, 0, 0],
+        [0, 0, -1,  0, 0, 0, 0],
+        [0, 0,  1,  1, 0, 0, 0]])
     b = b.astype(np.int8)
+    b = b*-1
+
     # b[4][2] = -1
     # b[4][1] = -1
     # print(was_winning_move(b, 2,1))
 
-    #print(b)
-    print(best_move_alpha_beta(b, 7))
+    print(b)
+    print(best_move_alpha_beta(b, 5))

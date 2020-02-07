@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 sys.path.append('../..')
-from utilities import *
+from utils import *
 from NeuralNet import NeuralNet
 
 from .OthelloNNet import OthelloNNet as onnet

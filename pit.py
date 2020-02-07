@@ -1,6 +1,6 @@
 import warnings
-
 warnings.filterwarnings('ignore', category=FutureWarning)
+
 from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
 import os
@@ -10,7 +10,7 @@ from matplotlib.ticker import AutoMinorLocator
 from MCTS import MCTS
 import Arena
 from connect4.tensorflow.NNet import NNetWrapper as NNet
-from utilities import dotdict
+from utils import dotdict
 
 
 def get_files(path):
@@ -98,13 +98,19 @@ def display_graph(data, ind, save_path=None, title='Title', display=False):
 
     plt.clf()
 
+
 if __name__ == '__main__':
     g = Connect4Game()
     # all players
     rp = RandomPlayer(g).play
     osp = OneStepLookaheadConnect4Player(g).play
     ep = EngineConnect4Player(g).play
-
+    vp = VelenaConnect4Player(g).play
+    """
+    arena = Arena.Arena(vp, rp, g, display=display)
+    results = arena.playGames(100, verbose=False)
+    print(results)
+    """
     rand_scores = []
     ahead_scores = []
     engine_scores = []

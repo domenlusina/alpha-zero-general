@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from utilities import *
+from utils import *
 
 from keras.models import *
 from keras.layers import *

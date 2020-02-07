@@ -1,4 +1,4 @@
-from utilities import *
+from utils import *
 
 import Arena
 from tafl.TaflGame import TaflGame, display

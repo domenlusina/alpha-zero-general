@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from utilities import *
+from utils import *
 
 import tensorflow as tf
 

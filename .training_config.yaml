@@ -1,0 +1,6 @@
+CUDA_VISIBLE_DEVICES: 3
+heuristic_probability: 40
+heuristic_type: "normal"
+heuristic_function : "h1"
+
+

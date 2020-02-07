@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.append('../..')
 from rts.src.encoders import OneHotEncoder, NumericEncoder
-from utilities import dotdict
+from utils import dotdict
 
 # ####################################################################################
 # ###################### INITIAL CONFIGS AND OUTPUTS ##################################

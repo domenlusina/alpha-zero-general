@@ -1,9 +1,15 @@
+import os
 from subprocess import run, PIPE
-from connect4.Connect4Tree import best_move_alpha_beta
+
 import numpy as np
 
+from connect4.Connect4Heuristics import heuristic1player, heuristic2
+from connect4.Connect4Tree import best_move_alpha_beta
+# IMPORTANT to know: when using getCanonicalForm, tokens of the current player are marked with 1
+# board given to a player is always in canonical form
+# during self play the first player's tokens are 1's and second player tokens are -1
 
-class RandomPlayer():
+class RandomPlayer:
     def __init__(self, game):
         self.game = game
 
@@ -15,7 +21,7 @@ class RandomPlayer():
         return a
 
 
-class HumanConnect4Player():
+class HumanConnect4Player:
     def __init__(self, game):
         self.game = game
 
@@ -32,7 +38,7 @@ class HumanConnect4Player():
         return move
 
 
-class EngineConnect4Player():
+class EngineConnect4Player:
     def __init__(self, game):
         self.game = game
         self.path = "..\\connect4\\bin\\best_move.exe"
@@ -73,10 +79,10 @@ class EngineConnect4Player():
         process = run(self.path, stdout=PIPE, input=(param + "\n").encode())
         b_move = process.returncode
 
-        return b_move-1
+        return b_move - 1
 
 
-class OneStepLookaheadConnect4Player():
+class OneStepLookaheadConnect4Player:
     """Simple player who always takes a win if presented, or blocks a loss if obvious, otherwise is random."""
 
     def __init__(self, game, verbose=False):
@@ -113,7 +119,7 @@ class OneStepLookaheadConnect4Player():
         return ret_move
 
 
-class AlphaBetaConnect4Player():
+class AlphaBetaConnect4Player:
     def __init__(self, game, depth):
         self.game = game
         self.depth = depth
@@ -122,5 +128,82 @@ class AlphaBetaConnect4Player():
         return best_move_alpha_beta(board, self.depth)
 
 
+class HeuristicOneConnect4Player:
+    def __init__(self, game):
+        self.game = game
+
+    def play(self, board):
+        return heuristic1player(board, 1)
 
 
+class HeuristicTwoConnect4Player:
+    def __init__(self, game):
+        self.game = game
+
+    def play(self, board):
+        return heuristic2(board)
+
+
+class VelenaConnect4Player:
+    def __init__(self, game):
+        self.game = game
+        self.path = "..\\veleng\\Debug\\"
+
+    def get_exposed_tokens(self, board, player):
+        non_empty_fields = board != 0
+        row_idx = np.argmax(non_empty_fields, axis=0)
+        results = []
+        for i, j in enumerate(row_idx):
+            if board[j, i] == player:
+                results.append((j, i))
+        return results
+
+    def move_seq(self, board, player):
+        if not board.any():
+            return []
+
+        exposed_tokens = self.get_exposed_tokens(board, player)
+        if not exposed_tokens:
+            return None
+
+        for exposed_token in exposed_tokens:
+            board[exposed_token] = 0
+            res = self.move_seq(board, -player)
+            if res is not None:
+                seq = [exposed_token[1]]
+                seq.extend(res)
+                return seq
+
+            board[exposed_token] = player
+
+    def play(self, board):
+        print(board)
+        if not board.any():
+            moves = '0'
+        else:
+            m = self.move_seq(board.copy(), -1)
+            m.reverse()
+            m.append(-1)
+            moves = "".join(map(lambda x: str(x + 1), m))
+
+        cwd = os.getcwd()
+        os.chdir(self.path)
+
+        process = run(os.getcwd() + '\\veleng.exe', stdout=PIPE, stderr=PIPE, input=(moves + '\nq\n').encode())
+        out = process.stdout.decode()
+        res = out.split('\n')[1].split(' ')
+        if '\r' in res:
+            res.remove('\r')
+
+        best_moves = list(map(lambda x: int(x) - 1, res))
+
+        # just double check that we output valid moves only
+        illegal_moves = board[0] != 0
+        for move, is_illegal in enumerate(illegal_moves):
+            if is_illegal and move in best_moves:
+                best_moves.remove(move)
+
+        os.chdir(cwd)
+
+        print(best_moves)
+        return np.random.choice(best_moves)

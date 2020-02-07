@@ -1,4 +1,4 @@
-from utilities import *
+from utils import *
 
 from Coach import Coach
 from tictactoe.TicTacToeGame import TicTacToeGame

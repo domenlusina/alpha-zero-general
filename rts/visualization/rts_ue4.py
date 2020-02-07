@@ -8,7 +8,7 @@ import tensorflow as tf
 import unreal_engine as ue
 # noinspection PyUnresolvedReferences
 from TFPluginAPI import TFPluginAPI
-from utilities import dotdict
+from utils import dotdict
 
 from MCTS import MCTS
 from rts.RTSGame import RTSGame

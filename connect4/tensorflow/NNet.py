@@ -1,17 +1,20 @@
-import os
 import sys
 import time
-
 import numpy as np
-
-sys.path.append('../../')
-from utilities import *
+import yaml
+import os
+from utils import *
 from pytorch_classification.utils import Bar, AverageMeter
 from NeuralNet import NeuralNet
+from .Connect4NNet import Connect4NNet as onnet
+
+sys.path.append('../../')
+with open(".training_config.yaml", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
 
 import tensorflow as tf
-from .Connect4NNet import Connect4NNet as onnet
-tf.get_logger().setLevel('INFO')
+tf.logging.set_verbosity('INFO')
 
 args = dotdict({
     'lr': 0.001,
@@ -32,6 +35,7 @@ class NNetWrapper(NeuralNet):
 
         self.sess = tf.Session(graph=self.nnet.graph)
         self.saver = None
+
         with tf.Session() as temp_sess:
             temp_sess.run(tf.global_variables_initializer())
         self.sess.run(tf.variables_initializer(self.nnet.graph.get_collection('variables')))

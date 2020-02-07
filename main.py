@@ -1,13 +1,26 @@
-import tensorflow as tf
-
+import yaml
 from CoachHeuristic import Coach
 from connect4.Connect4Game import Connect4Game
-from connect4.Connect4Heuristics import *
+from connect4.Connect4Heuristics import heuristic1, heuristic2
 from connect4.tensorflow.NNet import NNetWrapper as nn
-from utilities import dotdict
+from utils import dotdict
 
-folder = './temp_h1_50/'
+with open(".training_config.yaml", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
+import tensorflow as tf
+
+folder = '.\\{}_{}\\{}\\'.format(cfg["heuristic_function"], cfg["heuristic_type"], cfg["heuristic_probability"])
 cp_idx = 0
+
+if cfg["heuristic_function"] == "h1":
+    heuristic_function = heuristic1
+elif cfg["heuristic_function"] == "h2":
+    heuristic_function = heuristic2
+else:
+    raise Exception('Unknown heuristic function {}.'.format(cfg["heuristic_function"]))
 
 args = dotdict({
     'numIters': 100,
@@ -25,8 +38,8 @@ args = dotdict({
     'load_folder_file': (folder, 'checkpoint_' + str(cp_idx) + '.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
-    'heuristic_probability': 0.5,
-    'heuristic_type': 'normal',
+    'heuristic_probability': cfg["heuristic_probability"]/100,
+    'heuristic_type': cfg["heuristic_type"],
     'heuristic_function': heuristic1
 })
 

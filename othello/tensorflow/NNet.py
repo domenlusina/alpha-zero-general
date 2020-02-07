@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 sys.path.append('../../')
-from utilities import *
+from utils import *
 from pytorch_classification.utils import Bar, AverageMeter
 from NeuralNet import NeuralNet
 

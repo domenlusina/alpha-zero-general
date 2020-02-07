@@ -1,7 +1,7 @@
 from CoachHeuristicParallel import Coach
 from connect4.Connect4Game import Connect4Game
 from connect4.Connect4Heuristics import heuristic1
-from utilities import dotdict
+from utils import dotdict
 import os
 
 folder = './temp_h1_50_parallel'

@@ -9,8 +9,9 @@ import numpy as np
 
 from Arena import Arena
 from MCTS import MCTS
-from pytorch_classification.utils import Bar, AverageMeter
 from connect4.Connect4Heuristics import heuristic2_prob
+from pytorch_classification.utils import Bar, AverageMeter
+
 
 class Coach():
     """
@@ -59,8 +60,9 @@ class Coach():
                 trainExamples.append([b, self.curPlayer, p, None])
 
             if self.args.heuristic_type == 'combined':
+                fraction = self.args.heuristic_probability
                 h_prob = heuristic2_prob(board)
-                new_pi = (np.array(pi) + h_prob) / 2
+                new_pi = (np.array(pi) * (1 - fraction) + h_prob * fraction)
                 action = np.random.choice(len(new_pi), p=new_pi)
             elif self.args.heuristic_type == 'cooling':
                 prob = self.args.heuristic_probability - (episodeStep - 1) * self.args.heuristic_probability / 42

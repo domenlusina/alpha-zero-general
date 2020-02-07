@@ -1,4 +1,4 @@
-from utilities import *
+from utils import *
 
 import Arena
 from MCTS import MCTS

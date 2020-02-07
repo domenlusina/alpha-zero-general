@@ -11,7 +11,7 @@ from pygame.rect import Rect
 sys.path.append('..')
 from rts.src.config import NUM_ACTS, P_NAME_IDX, A_TYPE_IDX, d_user_shortcuts, FPS, ACTS, d_a_type, ACTS_REV, d_user_shortcuts_rev
 from rts.visualization.rts_pygame import init_visuals, update_graphics, message_display
-from utilities import dotdict
+from utils import dotdict
 
 """
 RTSPlayers.py

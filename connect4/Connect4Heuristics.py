@@ -5,7 +5,10 @@ def heuristic1(board):
     player = -1
     if np.sum(board) == 0:
         player = 1
+    return heuristic1player(board, player)
 
+
+def heuristic1player(board, player):
     valid_moves = board[0] == 0
     scores = np.zeros(valid_moves.size)
     for j in range(valid_moves.size):
