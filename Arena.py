@@ -101,7 +101,7 @@ class Arena():
                 bar.next()
 
         self.player1, self.player2 = self.player2, self.player1
-
+        print(oneWon, twoWon, draws)
         for _ in range(num):
             gameResult = self.playGame(verbose=verbose)
             if gameResult == -1:

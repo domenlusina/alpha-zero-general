@@ -20,7 +20,11 @@ def heuristic1player(board, player):
             board[available_idx[-1]][j] = 0  # we undo the move
         else:
             scores[j] = -np.inf
-    return np.argmax(scores)
+    if scores.max() != -np.inf:
+        return np.argmax(scores)
+    else:
+        valid = [move for move, valid in enumerate(valid_moves) if valid]
+        return np.random.choice(valid)
 
 
 def board_score(board, player):

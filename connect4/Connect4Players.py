@@ -3,8 +3,10 @@ from subprocess import run, PIPE
 
 import numpy as np
 
+import connect4.Connect4Tree as Tree
 from connect4.Connect4Heuristics import heuristic1player, heuristic2
-from connect4.Connect4Tree import best_move_alpha_beta
+
+
 # IMPORTANT to know: when using getCanonicalForm, tokens of the current player are marked with 1
 # board given to a player is always in canonical form
 # during self play the first player's tokens are 1's and second player tokens are -1
@@ -125,7 +127,7 @@ class AlphaBetaConnect4Player:
         self.depth = depth
 
     def play(self, board):
-        return best_move_alpha_beta(board, self.depth)
+        return Tree.best_move_alpha_beta(board, self.depth)
 
 
 class HeuristicOneConnect4Player:
@@ -177,7 +179,10 @@ class VelenaConnect4Player:
             board[exposed_token] = player
 
     def play(self, board):
-        print(board)
+        valid_moves = board[0] == 0
+        if valid_moves.sum() == 1:
+            return np.argmax(valid_moves)
+
         if not board.any():
             moves = '0'
         else:
@@ -189,21 +194,33 @@ class VelenaConnect4Player:
         cwd = os.getcwd()
         os.chdir(self.path)
 
+        # We add q at the end of move sequence to quit veleng.exe. Sequence has moves valued from 1 to 7.
+        # 0 indicates end of move sequence.
+        # More optimal solution would make exe run in the background and read lines after we give input.
+        # I didn't find the way to do this, since we just read the stream continuously not only when there is a new
+        # line in stdout
         process = run(os.getcwd() + '\\veleng.exe', stdout=PIPE, stderr=PIPE, input=(moves + '\nq\n').encode())
         out = process.stdout.decode()
+        os.chdir(cwd)
+
+        if len(out) == 0:
+            print(moves)
+            # sometimes we dont get the output - so we play one step look ahead player
+            # this always happens only two moves before the end for some reason
+            return OneStepLookaheadConnect4Player(self.game).play(board)
+
         res = out.split('\n')[1].split(' ')
         if '\r' in res:
             res.remove('\r')
 
         best_moves = list(map(lambda x: int(x) - 1, res))
-
         # just double check that we output valid moves only
-        illegal_moves = board[0] != 0
+        illegal_moves = np.logical_not(valid_moves)
         for move, is_illegal in enumerate(illegal_moves):
             if is_illegal and move in best_moves:
                 best_moves.remove(move)
 
-        os.chdir(cwd)
+        return best_moves[0]
 
-        print(best_moves)
-        return np.random.choice(best_moves)
+
+

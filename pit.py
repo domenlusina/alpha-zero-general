@@ -106,8 +106,8 @@ if __name__ == '__main__':
     osp = OneStepLookaheadConnect4Player(g).play
     ep = EngineConnect4Player(g).play
     vp = VelenaConnect4Player(g).play
-    """
-    arena = Arena.Arena(vp, rp, g, display=display)
+
+    arena = Arena.Arena(vp, ep, g, display=display)
     results = arena.playGames(100, verbose=False)
     print(results)
     """
@@ -163,3 +163,4 @@ if __name__ == '__main__':
         f.write(str(rand_scores) + '\n')
         f.write(str(ahead_scores) + '\n')
         f.write(str(engine_scores) + '\n')
+    """

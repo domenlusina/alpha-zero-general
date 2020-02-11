@@ -12,7 +12,7 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
 import tensorflow as tf
 
-folder = '.\\{}_{}\\{}\\'.format(cfg["heuristic_function"], cfg["heuristic_type"], cfg["heuristic_probability"])
+folder = './{}_{}/{}'.format(cfg["heuristic_function"], cfg["heuristic_type"], cfg["heuristic_probability"])
 cp_idx = 0
 
 if cfg["heuristic_function"] == "h1":
@@ -52,6 +52,7 @@ if __name__ == "__main__":
         print("Please install GPU version of TF")
 
     if run:
+        print(args)
         g = Connect4Game()
         nnet = nn(g)
 
