@@ -1,6 +1,9 @@
 import numpy as np
 from numba import njit, b1, i1
-
+cimport numpy as np
+DTYPE = np.int
+ctypedef np.int_t DTYPE_t
+cimport cython
 
 class Node:
     def __init__(self, board, move):
@@ -10,15 +13,18 @@ class Node:
         self.value = 0
 
 
-@njit(b1(i1[:, :], i1, i1))
-def was_winning_move(board, row, col):
+@cython.boundscheck(False) # turn off bounds-checking for entire function
+@cython.wraparound(False) 
+def was_winning_move(np.ndarray[np.int_t, ndim=2] board, int row, int col):
     if col == -1:
         return False
 
-    player = board[row, col]
-    player_pieces = board == player
-    win_len = 4
+    cdef int player = board[row, col]
+    player_pieces = np.where(board==player, True, False)
+    cdef int win_len = 4
+
     row_win = player_pieces[row, :]
+    cdef int i
     for i in range(row_win.size - win_len + 1):
         if row_win[i: i + win_len].all():
             return True
@@ -42,35 +48,31 @@ def was_winning_move(board, row, col):
     return False
 
 
-@njit(i1[:, :](i1[:, :], i1, i1, i1))
-def add_stone(board, row, col, player):
+def add_stone( board, int row, int col, int player):
     # available_idx = np.argmin(board[:, column] == 0) - 1
-    new_board = board.copy()
+    cdef  new_board = board.copy()
     new_board[row][col] = player
 
     return new_board
 
-
-@njit(i1(i1[:, :]))
+"""
 def player2move(board):
     player = -1
     if np.count_nonzero(board) % 2 == 0:
         player = 1
 
     return player
+"""
 
-
-@njit(b1[:](i1[:, :]))
-def valid_moves(board):
+def valid_moves( board):
     return board[0] == 0
 
 
-@njit(i1(i1[:, :], i1))
-def playable_row(board, col):
+def playable_row( board, int col):
     return np.where(board[:, col] == 0)[0][-1]
 
 
-def minimax(node, depth, alpha, beta, player):
+def minimax(node, int depth, alpha, beta, int player):
     was_win = was_winning_move(node.board, node.move[0], node.move[1])
     if was_win:
         node.value = -player
@@ -105,8 +107,8 @@ def minimax(node, depth, alpha, beta, player):
     return best_val
 
 
-def best_move_alpha_beta(board, depth):
-    board = board.astype(np.int8)
+def best_move_alpha_beta( board, depth):
+    board = board.astype(np.int)
     root = Node(board, (-1, -1))
     v = minimax(root, depth, -np.inf, np.inf, 1)  # board is in canonical form
     moves = []
@@ -117,27 +119,3 @@ def best_move_alpha_beta(board, depth):
 
     return np.random.choice(moves)
 
-
-if __name__ == "__main__":
-    b = np.zeros((6, 7))
-    b[5][3] = 1
-    b[5][2] = 1
-    # b[5][1] = 1
-    b[4][3] = -1
-
-    b = np.array([
-        [0, 0,  0,  0, 0, 0, 0],
-        [0, 0,  0,  0, 0, 0, 0],
-        [0, 0,  0,  0, 0, 0, 0],
-        [0, 0,  0,  0, 0, 0, 0],
-        [0, 0, -1,  0, 0, 0, 0],
-        [0, 0,  1,  1, 0, 0, 0]])
-    b = b.astype(np.int8)
-    b = b*-1
-
-    # b[4][2] = -1
-    # b[4][1] = -1
-    # print(was_winning_move(b, 2,1))
-
-    print(b)
-    print(best_move_alpha_beta(b, 5))
