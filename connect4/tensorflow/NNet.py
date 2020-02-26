@@ -9,9 +9,12 @@ from NeuralNet import NeuralNet
 from .Connect4NNet import Connect4NNet as onnet
 
 sys.path.append('../../')
-with open(".training_config.yaml", 'r') as ymlfile:
-    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
+try:
+    with open(".training_config.yaml", 'r') as ymlfile:
+        cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
+except:
+    pass
 
 import tensorflow as tf
 tf.logging.set_verbosity('INFO')

@@ -43,7 +43,7 @@ class HumanConnect4Player:
 class EngineConnect4Player:
     def __init__(self, game):
         self.game = game
-        self.path = "..\\connect4\\bin\\best_move.exe"
+        self.path = "C:\\Magistrsko_delo\\connect4\\bin\\best_move.exe"
 
     def position_param(self, board):
         no_moves = np.count_nonzero(board)

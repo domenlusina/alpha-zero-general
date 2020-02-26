@@ -1,4 +1,5 @@
 import yaml
+
 from CoachHeuristic import Coach
 from connect4.Connect4Game import Connect4Game
 from connect4.Connect4Heuristics import heuristic1, heuristic2
@@ -7,12 +8,18 @@ from utils import dotdict
 
 with open(".training_config.yaml", 'r') as ymlfile:
     cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    print(cfg)
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg["CUDA_VISIBLE_DEVICES"])
 import tensorflow as tf
 
-folder = './{}_{}/{}'.format(cfg["heuristic_function"], cfg["heuristic_type"], cfg["heuristic_probability"])
+if cfg["heuristic_probability"] == 0 or cfg["heuristic_function"] == "default":
+    folder = './h0/'+str(cfg["dirname"])
+else:
+    folder = './{}_{}/{}'.format(cfg["heuristic_function"], cfg["heuristic_type"], cfg["heuristic_probability"])
+
 cp_idx = 0
 
 if cfg["heuristic_function"] == "h1":
@@ -26,11 +33,11 @@ args = dotdict({
     'numIters': 100,
     'numEps': 100,  # Number of complete self-play games to simulate during a new iteration.
     'tempThreshold': 15,  #
-    'updateThreshold': 0.6,  # During arena playoff, new neural net will be accepted if threshold is surpasses.
+    'updateThreshold': 0.55,  # During arena playoff, new neural net will be accepted if threshold is surpasses.
     'maxlenOfQueue': 200000,  # Number of game examples to train the neural networks.
     'numMCTSSims': 25,  # Number of games moves for MCTS to simulate.
     'arenaCompare': 40,  # Number of games to play during arena play to determine if new net will be accepted.
-    'cpuct': 1,
+    'cpuct': cfg["cpuct"],
 
     'checkpoint': folder,
     'load_model': False,
@@ -38,7 +45,7 @@ args = dotdict({
     'load_folder_file': (folder, 'checkpoint_' + str(cp_idx) + '.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
-    'heuristic_probability': cfg["heuristic_probability"]/100,
+    'heuristic_probability': cfg["heuristic_probability"] / 100,
     'heuristic_type': cfg["heuristic_type"],
     'heuristic_function': heuristic1
 })

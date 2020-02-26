@@ -1,23 +1,6 @@
 import numpy as np
 from numba import njit, b1, i1, int64, float64
 
-"""
-@jitclass([
-    ('board', types.int8[:, :]),
-    ('row', types.int64),
-    ('col', types.int64),
-    ('value', types.int64)
-])
-"""
-
-
-class Node:
-    def __init__(self, board, row, col):
-        # self.children = np.zeros((7, 2), dtype=np.int)
-        self.board = board
-        self.row = row
-        self.col = col
-
 
 @njit(b1(i1[:, :], i1, i1))
 def was_winning_move(board, row, col):
@@ -50,23 +33,14 @@ def was_winning_move(board, row, col):
 
     return False
 
-
+"""
 @njit(i1[:, :](i1[:, :], i1, i1, i1))
 def add_stone(board, row, col, player):
     # available_idx = np.argmin(board[:, column] == 0) - 1
-    new_board = board.copy()
-    new_board[row][col] = player
+    #new_board = board.copy()
+    board[row][col] = player
 
-    return new_board
-
-
-@njit(i1(i1[:, :]))
-def player2move(board):
-    player = -1
-    if np.count_nonzero(board) % 2 == 0:
-        player = 1
-
-    return player
+    return board
 
 
 @njit(b1[:](i1[:, :]))
@@ -77,6 +51,7 @@ def valid_moves(board):
 @njit(i1(i1[:, :], i1))
 def playable_row(board, col):
     return np.where(board[:, col] == 0)[0][-1]
+"""
 
 
 @njit(float64(i1[:, :], int64, int64, int64, float64, float64, int64, float64[:, :]))
@@ -84,7 +59,7 @@ def minimax(board, move_row, move_col, depth, alpha, beta, player, result):
     if was_winning_move(board, move_row, move_col):
         return -player
 
-    moves = np.where(valid_moves(board))[0]  # better order moves from center shuffle?
+    moves = np.where(board[0] == 0)[0]  # we get columns (moves) we can play
     if depth == 0 or moves.size == 0:
         return 0
 
@@ -95,15 +70,16 @@ def minimax(board, move_row, move_col, depth, alpha, beta, player, result):
 
     for i in range(moves.size):
         col = moves[i]
-        row = playable_row(board, col)  # np.argmin(board[:, col] == 0) - 1
-        new_board = add_stone(board, row, col, player)
+        row = np.where(board[:, col] == 0)[0][-1]  # np.argmin(board[:, col] == 0) - 1
+        board[row][col] = player # we play the move
         # child_node = Node(new_board, row, col)
 
-        value = minimax(new_board, row, col, depth - 1, alpha, beta, -player, result)
-        if move_row == -1 and move_col == -1:
-            result[col, 0] = 1
-            result[col, 1] = value
-            # root_children.append((col, value))
+        value = minimax(board, row, col, depth - 1, alpha, beta, -player, result)
+        board[row][col] = 0  # undo the move this way is faster than just copying board
+        if move_row == -1 and move_col == -1:  # if we are in root "node" we want best child and the move we played
+            result[col, 0] = 1  # we played this move
+            result[col, 1] = value  # value we obtained
+            # move/col is an index of result
 
         if player == 1:
             best_val = max(best_val, value)

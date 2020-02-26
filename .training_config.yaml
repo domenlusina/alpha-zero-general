@@ -1,6 +1,6 @@
-CUDA_VISIBLE_DEVICES: 2
-heuristic_probability: 40
-heuristic_type: "normal"
+CUDA_VISIBLE_DEVICES: 3
+heuristic_probability: 0
+heuristic_type: "default"
 heuristic_function : "h2"
-
-
+cpuct : 10
+dirname: "cpuct/10"
