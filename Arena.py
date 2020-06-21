@@ -39,6 +39,7 @@ class Arena():
         curPlayer = 1
         board = self.game.getInitBoard()
         it = 0
+        moveHistory = []
         while self.game.getGameEnded(board, curPlayer) == 0:
             it += 1
             if verbose:
@@ -52,14 +53,16 @@ class Arena():
             if valids[action] == 0:
                 print(action)
                 assert valids[action] > 0
+
+            moveHistory.append(action)
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
         if verbose:
             assert self.display
             print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
             self.display(board)
-        return curPlayer*self.game.getGameEnded(board, curPlayer)
+        return curPlayer * self.game.getGameEnded(board, curPlayer), moveHistory
 
-    def playGames(self, num, verbose=False):
+    def playGames(self, num, verbose=False, returnGamesMoveHistory=False):
         """
         Plays num games in which player1 starts num/2 games and player2 starts
         num/2 games.
@@ -80,8 +83,12 @@ class Arena():
         oneWon = 0
         twoWon = 0
         draws = 0
+        if returnGamesMoveHistory:
+            gamesMoveHistory = []
         for _ in range(num):
-            gameResult = self.playGame(verbose=verbose)
+            gameResult, moveHistory = self.playGame(verbose=verbose)
+            if returnGamesMoveHistory:
+                gamesMoveHistory.append([moveHistory, gameResult])
             if gameResult == 1:
                 oneWon += 1
             elif gameResult == -1:
@@ -103,7 +110,9 @@ class Arena():
         self.player1, self.player2 = self.player2, self.player1
 
         for _ in range(num):
-            gameResult = self.playGame(verbose=verbose)
+            gameResult, moveHistory = self.playGame(verbose=verbose)
+            if returnGamesMoveHistory:
+                gamesMoveHistory.append([moveHistory, gameResult])
             if gameResult == -1:
                 oneWon += 1
             elif gameResult == 1:
@@ -123,5 +132,6 @@ class Arena():
                 bar.next()
         if verbose:
             bar.finish()
-
+        if returnGamesMoveHistory:
+            return (oneWon, twoWon, draws), gamesMoveHistory
         return oneWon, twoWon, draws

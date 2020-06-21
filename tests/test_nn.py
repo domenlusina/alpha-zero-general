@@ -8,8 +8,17 @@ from MCTS import MCTS
 from connect4.tensorflow.NNet import NNetWrapper as NNet
 from utils import dotdict
 from connect4.Connect4Logic import Board
-from connect4.Connect4Players import RandomPlayer
+from connect4.Connect4Players import HeuristicOneConnect4Player
+import os
 
+def get_files(path):
+    files = []
+    for r, d, f in os.walk(path):
+        for file in f:
+            if '.index' in file:
+                if 'best' not in file and 'temp' not in file:
+                    files.append(file[:-6])
+    return files
 
 def get_board(moves):
     moves = [int(m) - 1 for m in moves]
@@ -42,40 +51,91 @@ def run_test(n1p, test_file_path):
 
 if __name__ == '__main__':
     g = Connect4Game()
-    title = "H0_cpuct"
+    title = "test"
 
     nn = NNet(g)
     results = []
+    folder = 'H:\\alpha-zero-trained\\h0\\newresblock\\' #'H:\\alpha-zero-trained\\h0\\window\\'
+    subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
 
-    for i in range(1, 7):
-        folder = 'H:\\alpha-zero-trained\\h0\\cpuct\\'+str(i)
-        nn.load_checkpoint(folder, 'best.pth.tar')
-        args = dotdict({'numMCTSSims': 25, 'cpuct': i})
+    test_files = ["Test_L1_R1.txt",
+                  "Test_L1_R2.txt",
+                  "Test_L1_R3.txt",
+                  "Test_L2_R1.txt",
+                  "Test_L2_R2.txt",
+                  "Test_L3_R1.txt"]
+
+    for subfolder in subfolders:
+        nn.load_checkpoint(subfolder, 'best.pth.tar')
+        args = dotdict({'numMCTSSims': 25, 'cpuct': 5})
         mcts1 = MCTS(g, nn, args)
         n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
-
-        test_files = ["Test_L1_R1.txt",
-                      "Test_L1_R2.txt",
-                      "Test_L1_R3.txt",
-                      "Test_L2_R1.txt",
-                      "Test_L2_R2.txt",
-                      "Test_L3_R1.txt"]
+        """
+        n1p = HeuristicOneConnect4Player(g).play
+        """
 
         result = []
         for test_file in test_files:
             r = run_test(n1p, test_file)
             result.append(r)
-        results.append([folder.split('\\')[-1]]+result)
+        results.append([subfolder.split("\\")[-1]]+result)
 
     book = Workbook()
     sheet = book.active
     sheet.append([' '] + [test_file[5:-4] for test_file in test_files] + ["Average"])
     print(results)
     for row in results:
-        if len(row)>0:
-            row.append(sum(row) / len(row))
+        if len(row) > 0:
+            row.append(sum(row[1:]) / (len(row) - 1))
+        sheet.append(row)
+
+    book.save(folder+title + ".xlsx")
+
+
+"""
+if __name__ == '__main__':
+    g = Connect4Game()
+    title = "h2_combined_cooling"
+
+    nn = NNet(g)
+    results = []
+    folder = 'H:\\alpha-zero-trained\\h2_combined_cooling\\'  # 'H:\\alpha-zero-trained\\h0\\window\\'
+    subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
+
+    test_files = ["Test_L1_R1.txt",
+                  "Test_L1_R2.txt",
+                  "Test_L1_R3.txt",
+                  "Test_L2_R1.txt",
+                  "Test_L2_R2.txt",
+                  "Test_L3_R1.txt"]
+
+    for subfolder in subfolders:
+        files = get_files(subfolder)
+        files = sorted(files, key=lambda file: int(file[file.find('_') + 1: file.find('.')]))
+        ind = [int(file[file.find('_') + 1: file.find('.')]) for file in files]
+
+        for file in files:
+            nn.load_checkpoint(subfolder, file)
+            args = dotdict({'numMCTSSims': 25, 'cpuct': 5})
+            mcts1 = MCTS(g, nn, args)
+            n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
+            
+            result = []
+            for test_file in test_files:
+                r = run_test(n1p, test_file)
+                result.append(r)
+            results.append([file] + result)
+
+    book = Workbook()
+    sheet = book.active
+    sheet.append([' '] + [test_file[5:-4] for test_file in test_files] + ["Average"])
+    print(results)
+    for row in results:
+        if len(row) > 0:
+            row.append(sum(row[1:]) / (len(row) - 1))
         sheet.append(row)
 
     book.save(title + ".xlsx")
+"""
 
 

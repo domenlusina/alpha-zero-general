@@ -43,7 +43,10 @@ class HumanConnect4Player:
 class EngineConnect4Player:
     def __init__(self, game):
         self.game = game
-        self.path = "C:\\Magistrsko_delo\\connect4\\bin\\best_move.exe"
+        if os.name == 'nt':
+            self.path = "C:\\Magistrsko_delo\\connect4\\bin\\best_move.exe"
+        else:
+            self.path = "/home/dlusina/connect4/bin/best_move"
 
     def position_param(self, board):
         no_moves = np.count_nonzero(board)
@@ -221,6 +224,3 @@ class VelenaConnect4Player:
                 best_moves.remove(move)
 
         return best_moves[0]
-
-
-

@@ -1,8 +1,9 @@
 import math
 
-import numpy as np
+from ProbFunctions import *
 
 EPS = 1e-8
+from connect4.Connect4Heuristics import *
 
 
 class MCTS():
@@ -35,7 +36,11 @@ class MCTS():
             self.search(canonicalBoard)
 
         s = self.game.stringRepresentation(canonicalBoard)
-        counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
+        counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
+
+        if 'heuristic_function_name' in self.args and self.args.heuristic_function_name == 'h2array':
+            heuristic_counts = self.args.heuristic_function(canonicalBoard)
+            counts = counts + heuristic_counts
 
         if temp == 0:
             bestA = np.argmax(counts)
@@ -43,8 +48,9 @@ class MCTS():
             probs[bestA] = 1
             return probs
 
-        counts = [x ** (1. / temp) for x in counts]
-        probs = [x / float(sum(counts)) for x in counts]
+        counts = np.power(counts, (1. / temp))
+        probs = np.array(counts) / float(sum(counts))
+
         return probs
 
     def search(self, canonicalBoard):
@@ -101,14 +107,35 @@ class MCTS():
         cur_best = -float('inf')
         best_act = -1
 
+        if ("mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics) or\
+                ("mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "tanh") or\
+                ("mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "1/x"):
+
+            heuristic_prob = heuristic3(canonicalBoard)
+            best_move = np.argmax(heuristic_prob)
+            heuristic_prob = heuristic_prob * 0
+            heuristic_prob[best_move] = 1
+
         # pick the action with the highest upper confidence bound
         for a in range(self.game.getActionSize()):
             if valids[a]:
-                if (s, a) in self.Qsa:
-                    u = self.Qsa[(s, a)] + self.args.cpuct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (
-                                1 + self.Nsa[(s, a)])
+                if "mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics:
+                    pw = linearf(self.args.curIter, self.args.numIters, self.args.heuristic_probability, 0)
+                    prob_AZ = (1 - pw) * self.Ps[s][a] + pw * heuristic_prob[a]
+                elif "mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "tanh":
+                    pw = 1 - math.tanh(1 / self.args.c * self.Ns[s])
+                    prob_AZ = (1 - pw) * self.Ps[s][a] + pw * heuristic_prob[a]
+                elif "mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "1/x":
+                    pw = 1 / (self.args.c + self.Ns[s])
+                    prob_AZ = (1 - pw) * self.Ps[s][a] + pw * heuristic_prob[a]
                 else:
-                    u = self.args.cpuct * self.Ps[s][a] * math.sqrt(self.Ns[s] + EPS)  # Q = 0 ?
+                    prob_AZ = self.Ps[s][a]
+
+                if (s, a) in self.Qsa:
+                    u = self.Qsa[(s, a)] + self.args.cpuct * prob_AZ * math.sqrt(self.Ns[s]) / (
+                            1 + self.Nsa[(s, a)])
+                else:
+                    u = self.args.cpuct * prob_AZ * math.sqrt(self.Ns[s] + EPS)  # Q = 0 ?
 
                 if u > cur_best:
                     cur_best = u

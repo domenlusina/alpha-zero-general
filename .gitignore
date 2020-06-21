@@ -7,6 +7,10 @@
 
 # checkpoint
 checkpoints/
+h1/
+h2/
+h3/
+h0/
 
 # For PyCharm users
 .idea/
