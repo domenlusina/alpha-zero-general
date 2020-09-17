@@ -8,8 +8,8 @@ from MCTS import MCTS
 from connect4.tensorflow.NNet import NNetWrapper as NNet
 from utils import dotdict
 from connect4.Connect4Logic import Board
-from connect4.Connect4Players import HeuristicOneConnect4Player
 import os
+from connect4.Connect4Players import EngineConnect4Player
 
 def get_files(path):
     files = []
@@ -19,6 +19,7 @@ def get_files(path):
                 if 'best' not in file and 'temp' not in file:
                     files.append(file[:-6])
     return files
+
 
 def get_board(moves):
     moves = [int(m) - 1 for m in moves]
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 
     nn = NNet(g)
     results = []
-    folder = 'H:\\alpha-zero-trained\\h0\\newresblock\\' #'H:\\alpha-zero-trained\\h0\\window\\'
+    folder = 'H:\\alpha-zero-trained\\h0\\newresblock\\'  # 'H:\\alpha-zero-trained\\h0\\window\\'
     subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
 
     test_files = ["Test_L1_R1.txt",
@@ -67,18 +68,18 @@ if __name__ == '__main__':
 
     for subfolder in subfolders:
         nn.load_checkpoint(subfolder, 'best.pth.tar')
-        args = dotdict({'numMCTSSims': 25, 'cpuct': 5})
+        args = dotdict({'numMCTSSims': 25, 'cpuct': 1})
         mcts1 = MCTS(g, nn, args)
         n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
         """
-        n1p = HeuristicOneConnect4Player(g).play
+        n1p = EngineConnect4Player(g).play
         """
 
         result = []
         for test_file in test_files:
             r = run_test(n1p, test_file)
             result.append(r)
-        results.append([subfolder.split("\\")[-1]]+result)
+        results.append([subfolder.split("\\")[-1]] + result)
 
     book = Workbook()
     sheet = book.active
@@ -89,8 +90,7 @@ if __name__ == '__main__':
             row.append(sum(row[1:]) / (len(row) - 1))
         sheet.append(row)
 
-    book.save(folder+title + ".xlsx")
-
+    book.save(folder + title + ".xlsx")
 
 """
 if __name__ == '__main__':
@@ -137,5 +137,3 @@ if __name__ == '__main__':
 
     book.save(title + ".xlsx")
 """
-
-

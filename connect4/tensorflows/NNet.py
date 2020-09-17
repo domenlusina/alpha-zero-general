@@ -9,6 +9,7 @@ from NeuralNet import NeuralNet
 from .Connect4NNet import Connect4NNet as onnet
 
 sys.path.append('../../')
+print(sys.path)
 try:
     with open(".training_config.yaml", 'r') as ymlfile:
         cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
@@ -17,7 +18,7 @@ except:
     pass
 
 import tensorflow as tf
-tf.logging.set_verbosity('INFO')
+
 
 args = dotdict({
     'lr': 0.001,
