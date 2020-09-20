@@ -94,7 +94,7 @@ class ResNet():
             # 2
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels,
                                                  stage=2, block='b')
-           
+
             # 3
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels,
                                                  stage=3, block='c')
@@ -120,7 +120,7 @@ class ResNet():
             # 10
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels,
                                                  stage=10, block='k')
-            
+
             # 11
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels,
                                                  stage=11, block='m')

@@ -63,11 +63,11 @@ class Connect4Game(Game):
         return str(self._base_board.with_np_pieces(np_pieces=board))
 
 
-def display(board):
+def display(board, symbols=False):
     print(" -----------------------")
     print(' '.join(map(str, range(len(board[0])))))
-    if False:
-        board = np.where(board == 0, '.', board)
+    if True:
+        board = np.where(board == 0, ' ', board)
         board = np.where(board == '1.0', 'X', board)
         board = np.where(board == '-1.0', 'O', board)
     print(board)

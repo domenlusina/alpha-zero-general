@@ -1,9 +1,8 @@
 import math
 
-from ProbFunctions import *
-
 EPS = 1e-8
 from connect4.Connect4Heuristics import *
+import numpy as np
 
 
 class MCTS():
@@ -37,11 +36,12 @@ class MCTS():
 
         s = self.game.stringRepresentation(canonicalBoard)
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
-
+        # print(counts)
+        """
         if 'heuristic_function_name' in self.args and self.args.heuristic_function_name == 'h2array':
             heuristic_counts = self.args.heuristic_function(canonicalBoard)
             counts = counts + heuristic_counts
-
+        """
         if temp == 0:
             bestA = np.argmax(counts)
             probs = [0] * len(counts)
@@ -107,20 +107,16 @@ class MCTS():
         cur_best = -float('inf')
         best_act = -1
 
-        if ("mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics) or\
-                ("mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "tanh") or\
+        if ("mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics and self.args.heuristic_probability > 0) or \
+                ("mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "tanh") or \
                 ("mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "1/x"):
-
-            heuristic_prob = heuristic3(canonicalBoard)
-            best_move = np.argmax(heuristic_prob)
-            heuristic_prob = heuristic_prob * 0
-            heuristic_prob[best_move] = 1
+            heuristic_prob = heuristic1(canonicalBoard)
 
         # pick the action with the highest upper confidence bound
         for a in range(self.game.getActionSize()):
             if valids[a]:
-                if "mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics:
-                    pw = linearf(self.args.curIter, self.args.numIters, self.args.heuristic_probability, 0)
+                if "mcts_with_heuristics" in self.args and self.args.mcts_with_heuristics and self.args.heuristic_probability > 0:
+                    pw = self.args.heuristic_probability  # linearf(self.args.curIter, self.args.numIters, 100, 0)
                     prob_AZ = (1 - pw) * self.Ps[s][a] + pw * heuristic_prob[a]
                 elif "mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "tanh":
                     pw = 1 - math.tanh(1 / self.args.c * self.Ns[s])
@@ -128,6 +124,8 @@ class MCTS():
                 elif "mcts_with_heuristics_visits" in self.args and self.args.mcts_with_heuristics_visits == "1/x":
                     pw = 1 / (self.args.c + self.Ns[s])
                     prob_AZ = (1 - pw) * self.Ps[s][a] + pw * heuristic_prob[a]
+                elif "warm_start" in self.args and self.args.warm_start and self.args.curIter <= self.args.turnOffIter:
+                    prob_AZ = heuristic2_prob(canonicalBoard)[a]
                 else:
                     prob_AZ = self.Ps[s][a]
 

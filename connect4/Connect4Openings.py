@@ -1,6 +1,9 @@
 import random
 
+from numba import jit
 
+
+@jit
 def opening_tree():
     d2moves = [[3, 3, 3, 3, 3, 4, 4, 4, 4, 1, 1, 4, 3, 6, 4, 1, 1, 1, 1, 5, 5, 5, 5],
                [3, 3, 3, 3, 3, 4, 4, 4, 4, 1, 4, 1, 1, 0, 0, 0, 0],
@@ -24,6 +27,12 @@ def opening_tree():
                [3, 3, 3, 6],
                [3, 3, 3, 3]]
 
+    openings = d2moves
+    res_i = random.randint(0, len(openings) - 1)
+    return openings[res_i]
+
+
+"""
     b1moves = [[3, 1, 5, 4, 5, 5, 3, 3, 2, 3, 5],
                [3, 1, 1],
                [3, 1, 5, 4, 5, 5, 3, 3, 3],
@@ -82,5 +91,4 @@ def opening_tree():
                [3, 4, 1, 1, 0, 2, 4, 1, 1, 4, 1],
                [3, 4, 1, 1, 0, 2, 4, 2, 0, 1, 1]]
 
-    openings = d2moves
-    return random.choice(openings)
+"""

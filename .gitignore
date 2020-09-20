@@ -7,11 +7,21 @@
 
 # checkpoint
 checkpoints/
+h0/
 h1/
 h2/
 h3/
-h0/
+
+graphs/grafiIgralci/
+graphs/grafiMistakes/
+graphs/grafiSamo/
+
+tests/grafiIter/
+tests/slike_grafov/
+
+logs4/
 
 # For PyCharm users
 .idea/
+
 

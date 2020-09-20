@@ -3,10 +3,9 @@ from pathlib import Path
 import yaml
 
 from CoachHeuristic import Coach
-from ProbFunctions import *
 from connect4.Connect4Game import Connect4Game
 from connect4.Connect4Heuristics import *
-from connect4.tensorflow.NNet import NNetWrapper as nn
+from connect4.tensorflows.NNet import NNetWrapper as nn
 from utils import dotdict
 
 with open(".training_config.yaml", 'r') as ymlfile:
@@ -28,8 +27,6 @@ else:
     folder = './{}/{}/{}/{}'.format(cfg["heuristic_function"], cfg["dirname"], cfg["heuristic_type"],
                                     cfg["heuristic_probability"])
 
-cp_idx = 0
-
 if cfg["heuristic_function"] == "h0":
     heuristic_function = None
 elif cfg["heuristic_function"] == "h1":
@@ -38,12 +35,14 @@ elif cfg["heuristic_function"] == "h2":
     heuristic_function = heuristic2
 elif cfg["heuristic_function"] == "h3":
     heuristic_function = heuristic3
-elif cfg["heuristic_function"] == "h2array":
-    heuristic_function = heuristic2_array
+elif cfg["heuristic_function"] == "h2prob":
+    heuristic_function = heuristic2_prob
 elif cfg["heuristic_function"] == "h1look":
     heuristic_function = heuristic1lookahead
 else:
     raise Exception('Unknown heuristic function {}.'.format(cfg["heuristic_function"]))
+
+cp_idx = 0
 
 args = dotdict({
     'curIter': 0,
@@ -76,16 +75,21 @@ args = dotdict({
     'mcts_with_heuristics': False,
     'mcts_with_heuristics_visits': '',  # options: tanh, 1/x
     'c': cfg["heuristic_probability"],
+    'warm_start': False,
+    'turnOffIter': 0,
 
     'change_probabilities': False,
 
-    # 'heuristic_probability_cooling': False,
-    # 'heuristic_probability_cooling_step': 0.05,
+    'heuristic_probability_cooling': False,
+    'heuristic_probability_cooling_step': 0,
+
+    'openings_prob': 0,
 
     'checkpoint': folder,
-    'load_model': False,
-    'checkpoint_index': 0,
+    'load_model': cp_idx > 0,
+    'checkpoint_index': cp_idx,
     'load_folder_file': (folder, 'checkpoint_' + str(cp_idx) + '.pth.tar'),
+
 })
 
 if __name__ == "__main__":
@@ -113,6 +117,7 @@ if __name__ == "__main__":
             nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
         c = Coach(g, nnet, args)
+        print(c.args.checkpoint_index)
         if args.load_model:
             print("Load trainExamples from file")
             c.loadTrainExamples()

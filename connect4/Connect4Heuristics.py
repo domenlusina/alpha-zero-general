@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, i1, b1, int64
+from numba import njit
 
 
 def heuristic1lookahead(board):
@@ -29,39 +29,65 @@ def heuristic1lookahead(board):
     return None
 
 
-def heuristic1(board, pi=np.ones(7) / 7, feature=4):
+def heuristic1(board):
     player = 1
     # if np.sum(board) == 0:
     #     player = 1
-    return heuristic1player(board, player, pi, feature)
+    res = np.zeros(7)
+    res[heuristic1player(board, player)] = 1
+    return res
 
 
-def heuristic1player(board, player, pi, feature):
+def heuristic1player(board, player):
     valid_moves = board[0] == 0
     scores = np.zeros(valid_moves.size)
     valid_moves_scores = []
+
+    # feature 1
+    win_move = -1
+    prevent_win_move = -1
     for j in range(valid_moves.size):
         if valid_moves[j]:
             available_idx, = np.where(board[:, j] == 0)
             board[available_idx[-1]][j] = player
-            scores[j] = board_score(board, player, feature)
+            player_score = board_score(board, player, [1])
+            if player_score == np.inf:
+                win_move = j
+
+            board[available_idx[-1]][j] = -player
+            enemy_score = board_score(board, -player, [1])
+            if enemy_score == np.inf:
+                prevent_win_move = j
+            board[available_idx[-1]][j] = 0
+
+    if win_move != -1:
+        return win_move
+
+    if prevent_win_move != -1:
+        return prevent_win_move
+
+    for j in range(valid_moves.size):
+        if valid_moves[j]:
+            available_idx, = np.where(board[:, j] == 0)
+            board[available_idx[-1]][j] = player
+
+            scores[j] = board_score(board, player, [2, 3, 4])
             if scores[j] != np.inf:
-                scores[j] -= board_score(board, -player, feature)
+                board[available_idx[-1]][j] = -player
+                scores[j] -= board_score(board, -player, [2, 3, 4])
+
             board[available_idx[-1]][j] = 0  # we undo the move
             valid_moves_scores.append(scores[j])
         else:
             scores[j] = -np.inf
 
-    if len(set(valid_moves_scores)) == 1:
-        pi = valid_moves * pi
-        pi /= sum(pi)
-
-        return np.random.choice(len(pi), p=pi)
+    if np.max(scores) == -np.inf:
+        return np.argmax(valid_moves)
 
     return np.argmax(scores)
 
 
-def board_score(board, player, feature):
+def board_score(board, player, features):
     board = np.copy(board)
     score = 0
     player_pieces = board * player
@@ -69,7 +95,7 @@ def board_score(board, player, feature):
     l_len = 4
 
     """FEATURE 1"""
-    if feature >= 1:
+    if 1 in features:
         f1l = straight_lines(player_pieces, l_len, 4)
         f1c = straight_lines(player_pieces, l_len, 4, transpose=True)
         f1d = diagonal_lines(player_pieces, l_len, 4)
@@ -78,7 +104,7 @@ def board_score(board, player, feature):
             return np.inf
 
     """FEATURE 2"""
-    if feature >= 2:
+    if 2 in features:
         # inf cases
         f2l = straight_lines(player_pieces, l_len, 3)
         for i, j in f2l:
@@ -101,7 +127,6 @@ def board_score(board, player, feature):
                     break
                     # perhaps there should be some reward even if it is not immediately playable
 
-    if feature >= 2:
         # preventable win cases - column
 
         f2c = [(i, j) for i, j in straight_lines(player_pieces, l_len, 3, transpose=True) if i < shape[0] - 3]
@@ -117,7 +142,7 @@ def board_score(board, player, feature):
 
     """FEATURE 3"""
 
-    if feature >= 3:
+    if 3 in features:
         # case 1 - line
         f3l = straight_lines(player_pieces, l_len, 2)
         for i, j in f3l:
@@ -174,7 +199,7 @@ def board_score(board, player, feature):
         f3c = [(i, j) for i, j in straight_lines(player_pieces, l_len, 2, transpose=True) if i < shape[0] - 3]
         score += len(f3c) * 10000
 
-    if feature >= 4:
+    if 4 in features:
         """FEATURE 4 """
         for i in range(shape[0]):
             for j in range(shape[1]):
@@ -252,50 +277,46 @@ h = [[1, 1,  1,  3,  1, 1, 1],
 
 
 def heuristic2(board):
-    fields = last_nonzero(board)
-    scores = [h[j][i] if j is not None else 0 for i, j in enumerate(fields)]
-
-    idx = np.array([i for i, score in enumerate(scores) if max(scores) == score])
-
-    return np.random.choice(idx)
-
-
-def heuristic2_prob_max(board):
-    fields = last_nonzero(board)
-    scores = [h[j][i] if j is not None else 0 for i, j in enumerate(fields)]
-
-    res = np.array([max(scores) == score for i, score in enumerate(scores)])
+    probs = heuristic2_prob(board)
+    res = probs == np.max(probs)
     return res / res.sum()
 
 
-def heuristic2_array(board):
-    fields = last_nonzero(board)
-    fields = [h[j][i] if j is not None else 0 for i, j in enumerate(fields)]
-    return fields
-
-
+@njit
 def heuristic2_prob(board):
-    """"
     h = [[3, 4, 5, 1, 5, 4, 3],
          [4, 6, 8, 13, 8, 6, 4],
          [5, 8, 11, 25, 11, 8, 5],
          [5, 8, 11, 25, 11, 8, 5],
          [4, 6, 8, 25, 8, 6, 4],
          [3, 4, 5, 25, 5, 4, 3]]
-    """
+
     fields = last_nonzero(board)
     prob = np.zeros(fields.size)
     for i, j in enumerate(fields):
-        if j is not None:
+        if j != -1:
             prob[i] = h[j][i]
 
     return prob / np.linalg.norm(prob, 1)
 
 
+@njit
+def last_nonzero(arr):
+    res = np.ones(arr.shape[1], dtype=np.int_) * (arr.shape[0] - 1)
+    for j in range(arr.shape[1]):
+        for i in range(arr.shape[0]):
+            if arr[i][j] != 0:
+                res[j] = i - 1
+                break
+    return res
+
+
+"""
 def last_nonzero(arr):
     mask = arr == 0
     val = arr.shape[0] - np.flip(mask, axis=0).argmax(axis=0) - 1
     return np.where(mask.any(axis=0), val, None)
+"""
 
 
 def heuristic3(cannonical_board):
@@ -371,7 +392,7 @@ def connected_four(cannonical_board, played_col, played_row):
                 return True
 
     start_diag_2 = (played_row + min([5 - played_row, played_col]), played_col - min([5 - played_row, played_col]))
-    length_diag_2 = min([start_diag_2[0]+1, 7 - start_diag_2[1]])
+    length_diag_2 = min([start_diag_2[0] + 1, 7 - start_diag_2[1]])
 
     if length_diag_2 >= 4:
         diag_2 = np.array([cannonical_board[start_diag_2[0] - i, start_diag_2[1] + i] for i in range(length_diag_2)])
@@ -382,162 +403,28 @@ def connected_four(cannonical_board, played_col, played_row):
     return False
 
 
-""""
-    # major threat
-    major_threats = []
-    major_threats.extend(major_threats_line(board, transpose=False))
-    major_threats.extend(major_threats_line(board, transpose=True))
-    major_threats.extend(major_threats_diag(board, transpose=False))
-    major_threats.extend(major_threats_diag(board, transpose=True))
-
-    major_threats_field = np.zeros((6, 7))
-
-    for x, y in major_threats:
-        major_threats_field[x, y] = 1
-
-    for i in range(7):
-        found_odd = False
-        for j in range(5, -1, -2):
-            if found_odd:
-                major_threats_field[j, i] = 0
-            if major_threats_field[j, i] == 1:
-                found_odd = True
-
-        found_even = False
-        for j in range(4, -1, -2):
-            if found_even:
-                major_threats_field[j, i] = 0
-            if major_threats_field[j, i] == 1:
-                found_even = True
-
-    # minor threats
-    
-    minor_threats = []
-    minor_threats.extend(filter_minor_threats(minor_threats_line(board, transpose=False), major_threats))
-    minor_threats.extend(filter_minor_threats(minor_threats_line(board, transpose=True), major_threats))
-    minor_threats.extend(filter_minor_threats(minor_threats_diag(board, transpose=False), major_threats))
-    minor_threats.extend(filter_minor_threats(minor_threats_diag(board, transpose=True), major_threats))
-    """
-
-
-def filter_minor_threats(minor_threats, major_threats):
-    res = []
-    for i in range(0, len(minor_threats), 2):
-        if (not minor_threats[i] in major_threats) and (not minor_threats[i + 1] in major_threats):
-            res.append(minor_threats[i])
-            res.append(minor_threats[i + 1])
-    return res
-
-
-@njit
-def major_threats_line(board, transpose=False):
-    if transpose:
-        board = board.transpose()
-
-    threats = []
-
-    for i in range(board.shape[0]):
-        for j in range(board.shape[1] - 3):
-            tmp = board[i, j:j + 4]
-            if tmp.sum() == 3:
-                threats.append((i, j + np.argmin(tmp)))
-
-    if transpose:
-        threats = [(y, x) for x, y in threats]
-
-    return threats
-
-
-@njit
-def major_threats_diag(board, transpose=False):
-    if transpose:
-        board = board.transpose()
-
-    threats = []
-
-    for i in range(board.shape[0] - 3):
-        for j in range(board.shape[1] - 3):
-            tmp = np.array([board[i, j], board[i + 1, j + 1], board[i + 2, j + 2], board[i + 3, j + 3]])
-            if tmp.sum() == 3:
-                offset = np.argmin(tmp)
-                threats.append((i + offset, j + offset))
-
-    if transpose:
-        threats = [(y, x) for x, y in threats]
-
-    return threats
-
-
-def minor_threats_line(board, transpose=False):
-    if transpose:
-        board = board.transpose()
-
-    minor = np.array([
-        [0, 0, 1, 1],
-        [0, 1, 0, 1],
-        [0, 1, 1, 0],
-        [1, 0, 0, 1],
-        [1, 0, 1, 0],
-        [1, 1, 0, 0],
-
-    ])
-
-    threats = []
-
-    for i in range(board.shape[0]):
-        for j in range(board.shape[1] - 3):
-            tmp = board[i, j:j + 4]
-            if (minor == tmp).all(axis=1).any():
-                minor_threats = np.where(tmp == 0)[0]
-                threats.append((i, j + minor_threats[0]))
-                threats.append((i, j + minor_threats[1]))
-
-    if transpose:
-        threats = [(y, x) for x, y in threats]
-
-    return threats
-
-
-def minor_threats_diag(board, transpose=False):
-    if transpose:
-        board = board.transpose()
-
-    minor = np.array([
-        [0, 0, 1, 1],
-        [0, 1, 0, 1],
-        [0, 1, 1, 0],
-        [1, 0, 0, 1],
-        [1, 0, 1, 0],
-        [1, 1, 0, 0],
-
-    ])
-
-    threats = []
-
-    for i in range(board.shape[0] - 3):
-        for j in range(board.shape[1] - 3):
-            tmp = board[(i, i + 1, i + 2, i + 3), (j, j + 1, j + 2, j + 3)]
-            if (minor == tmp).all(axis=1).any():
-                minor_threats = np.where(tmp == 0)[0]
-                threats.append((i + minor_threats[0], j + minor_threats[0]))
-                threats.append((i + minor_threats[1], j + minor_threats[1]))
-
-    if transpose:
-        threats = [(y, x) for x, y in threats]
-
-    return threats
-
-
 if __name__ == "__main__":
-    board = np.array([[0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, -1, 0, 0, 0],
-                      [0, 0, 0, 1, 0, 0, 0]]
+
+    import time
+
+    board = np.array([[-1, 0, 0, 0, 0, 0, 0],
+                      [1, 0, 0, 0, 0, 0, 0],
+                      [-1, 0, 0, 0, 0, 0, 0],
+                      [1, 0, 0, 0, 0, 0, 0],
+                      [-1, 0, 0, -1, 0, 0, 0],
+                      [1, 0, 0, 1, 0, 0, 0]]
                      )
 
-    print(heuristic2_array(board))
+    """
+        t = time.time()
+        for i in range(repeat):
+            last_nonzero2(board)
+        print(time.time() - t)
+    
+        print(last_nonzero(board))
+        print(last_nonzero2(board))
+    """
+
     """
     board = np.array([[0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 0],

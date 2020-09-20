@@ -7,7 +7,7 @@ from GraphDrawing import display_graph
 from MCTS import MCTS
 from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
-from connect4.tensorflow.NNet import NNetWrapper as NNet
+from connect4.tensorflows.NNet import NNetWrapper as NNet
 from utils import dotdict
 
 warnings.filterwarnings('ignore', category=FutureWarning)

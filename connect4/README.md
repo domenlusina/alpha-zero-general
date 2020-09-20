@@ -7,7 +7,7 @@ To train a model for Connect4, update the imports in ```main.py``` to:
 ```python
 from Coach import Coach
 from connect4.Connect4Game import Connect4Game
-from connect4.tensorflow.NNet import NNetWrapper as nn
+from connect4.tensorflows.NNet import NNetWrapper as nn
 from utils import dotdict
 ```
 

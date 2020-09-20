@@ -4,7 +4,7 @@ import Arena
 from MCTS import MCTS
 from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
-from connect4.tensorflow.NNet import NNetWrapper as NNet
+from connect4.tensorflows.NNet import NNetWrapper as NNet
 from utils import dotdict
 
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -12,9 +12,9 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 if __name__ == '__main__':
     g = Connect4Game()
 
-    folder = 'C:\\Magistrsko_delo\\alpha-zero-general\\h3\\mcts_visits_tanh_10_max\\default\\'  #'H:\\alpha-zero-trained\\h2\\mcts_heur\\'
+    folder = 'H:\\alpha-zero-trained\\final\\h1\\cpuc5_combined\\combined\\'  #'H:\\alpha-zero-trained\\final\h2\\mcts_visits_1_x\\default\\'  #'H:\\alpha-zero-trained\\h2\\mcts_heur\\'
     # 'random player', '1-lookahead player',
-    enemies = ['engine player'] # 'random player', '1-lookahead player',
+    enemies = ['random player', '1-lookahead player', 'engine player', 'suboptimal player'] #
     xlabel = 'Weight of heuristic probability '
     # enemy = 'random player'
     # enemy = '1-lookahead player'
@@ -24,9 +24,11 @@ if __name__ == '__main__':
     rp = RandomPlayer(g).play
     osp = OneStepLookaheadConnect4Player(g).play
     ep = EngineConnect4Player(g).play
+    subopt = SuboptimalConnect4Player(g).play
 
     for enemy in enemies:
         subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
+        print(subfolders)
         subfolders = sorted(subfolders, key=lambda x: x.split('\\')[-1])
         print(subfolders)
         if enemy == 'random player':
@@ -35,6 +37,8 @@ if __name__ == '__main__':
             op = osp
         elif enemy == 'engine player':
             op = ep
+        elif enemy == 'suboptimal player':
+            op = subopt
 
         report = []
         results = []

@@ -8,7 +8,7 @@ import numpy as np
 
 from Arena import Arena
 from MCTS import MCTS
-from connect4.Connect4BoardEvaluate import getBoardScore
+from connect4.Connect4BoardEvaluate import getBoardScoreTheoretical
 from connect4.Connect4Game import Connect4Game
 from connect4.Connect4Heuristics import heuristic2_prob
 from connect4.Connect4Openings import *
@@ -54,7 +54,10 @@ class Coach():
         episodeStep = 0
         moveHistory = []
 
-        use_opening = random.random() > 0.5
+        if "openings_prob" in self.args:
+            use_opening = random.random() < self.args.openings_prob
+        else:
+            use_opening = False
         if use_opening:
             opening = opening_tree()
 
@@ -71,26 +74,32 @@ class Coach():
             if not use_opening or episodeStep >= len(opening):
                 if self.args.heuristic_type == 'combined':
                     fraction = self.args.heuristic_probability
-                    h_prob = heuristic2_prob(canonicalBoard)
+                    h_prob = self.args.heuristic_function(canonicalBoard)
                     new_pi = (np.array(pi) * (1 - fraction) + h_prob * fraction)
                     if self.args.change_probabilities:
                         pi = new_pi
 
                     action = np.random.choice(len(new_pi), p=new_pi)
-                elif self.args.heuristic_type == 'cooling':
-                    prob = self.args.heuristic_probability - (episodeStep - 1) * self.args.heuristic_probability / 42
+                elif self.args.heuristic_type == 'normal' or self.args.heuristic_type == 'cooling':
+                    if self.args.heuristic_type == 'cooling':
+                        prob = self.args.heuristic_probability - (
+                                episodeStep - 1) * self.args.heuristic_probability / 42
+                    else:
+                        prob = self.args.heuristic_probability
                     if np.random.ranf(1)[0] > prob:
                         action = np.random.choice(len(pi), p=pi)
                     else:
-                        action = self.args.heuristic_function(canonicalBoard)
-                elif self.args.heuristic_type == 'normal':
-                    prob = self.args.heuristic_probability
-                    if np.random.ranf(1)[0] > prob:
-                        action = np.random.choice(len(pi), p=pi)
-                    else:
-                        action = self.args.heuristic_function(canonicalBoard)  # , feature=1, pi=pi)
-                    if action is None:
-                        action = np.random.choice(len(pi), p=pi)
+                        new_pi = self.args.heuristic_function(canonicalBoard)
+                        if self.args.change_probabilities:
+                            pi = new_pi
+                        action = np.random.choice(len(new_pi), p=new_pi)
+                elif self.args.heuristic_type == 'cooling_iter':
+                    fraction = max(0, ((50 - (self.args.curIter - 1)) / 50))
+                    h_prob = heuristic2_prob(canonicalBoard)
+                    new_pi = (np.array(pi) * (1 - fraction) + h_prob * fraction)
+                    if self.args.change_probabilities:
+                        pi = new_pi
+                    action = np.random.choice(len(new_pi), p=new_pi)
 
                 elif self.args.heuristic_type == 'custom':
                     prob = self.args.probability_function(episodeStep)
@@ -106,7 +115,6 @@ class Coach():
                     raise NameError("Wrong heuristic type '" + self.args.heuristic_type + "'")
 
             else:
-                print(opening, episodeStep-1)
                 action = opening[episodeStep - 1]
                 # pi = np.array(7)
                 # pi[action] = 1
@@ -126,7 +134,7 @@ class Coach():
                 if self.args.supervised:
                     result = []
                     for x in trainExamples:
-                        r = getBoardScore(x[3])
+                        r = getBoardScoreTheoretical(x[3])
                         result.append((x[0], x[2], r))
 
                         print(x[0], "Moves", "".join([str(i + 1) for i in x[3]]), "Theoretical value", r)
@@ -137,9 +145,12 @@ class Coach():
                         r = 1.198 - 99 / 3500 * episodeStep
 
                     res = [[x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))] for x in trainExamples]
+
                     if use_opening:
+                        score = 1
                         for i in range(len(opening)):
-                            res[i][2] = 1
+                            res[i][2] = score
+                            score *= -1
                     return res
 
     def learn(self, verbose=False):
@@ -229,8 +240,8 @@ class Coach():
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
 
-            # if self.args.heuristic_probability_cooling and self.args.heuristic_probability - self.args.heuristic_probability_cooling_step >= 0:
-            #    self.args.heuristic_probability -= self.args.heuristic_probability_cooling_step
+            if self.args.heuristic_probability_cooling and self.args.heuristic_probability - self.args.heuristic_probability_cooling_step >= 0:
+                   self.args.heuristic_probability -= self.args.heuristic_probability_cooling_step
 
     def getCheckpointFile(self, iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'

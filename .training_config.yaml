@@ -1,6 +1,6 @@
 CUDA_VISIBLE_DEVICES: 0
-heuristic_probability: 0
-heuristic_type: "default"
-heuristic_function : "h0"
-cpuct : 1
-dirname: "opening_50"
+heuristic_probability: 20
+heuristic_type: "cooling"
+heuristic_function : "h2"
+cpuct : 5
+dirname: "cpuc5_cooling"

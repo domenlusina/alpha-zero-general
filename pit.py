@@ -4,12 +4,9 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 from connect4.Connect4Game import Connect4Game, display
 from connect4.Connect4Players import *
-import os
-import numpy as np
-from GraphDrawing import display_graph
 from MCTS import MCTS
 import Arena
-from connect4.tensorflow.NNet import NNetWrapper as NNet
+from connect4.tensorflows.NNet import NNetWrapper as NNet
 from utils import dotdict
 
 
@@ -64,7 +61,7 @@ if __name__ == '__main__':
     moves_ahead = []
     moves_engine = []
 
-    results_folder = 'C:\\Magistrsko_delo\\alpha-zero-general\\h3\\mcts_visits_tanh_10_heuristic_3\\default\\10\\' #'H:\\alpha-zero-trained\\h0\\cpuct\\1\\'
+    results_folder = 'C:\\Magistrsko_delo\\alpha-zero-general\\h2\\basic\\cooling_iter\\50\\'  # 'H:\\alpha-zero-trained\\h0\\cpuct\\1\\'
     files = get_files(results_folder)
 
     files = sorted(files, key=lambda file: int(file[file.find('_') + 1: file.find('.')]))
@@ -109,10 +106,10 @@ if __name__ == '__main__':
                   title='Playing against 1-lookahead player')
     display_graph(engine_scores, ind, save_path=results_folder + 'engine.png', title='Playing against engine')
     """
-    #with open(results_folder + 'random player.txt', "w+") as f:
+    # with open(results_folder + 'random player.txt', "w+") as f:
     #    f.write(getReport(rand_scores, files, moves_rand))
 
-    #with open(results_folder + '1-lookahead player.txt', "w+") as f:
+    # with open(results_folder + '1-lookahead player.txt', "w+") as f:
     #    f.write(getReport(ahead_scores, files, moves_ahead))
 
     with open(results_folder + 'engine player.txt', "w+") as f:
@@ -127,5 +124,5 @@ if __name__ == '__main__':
 
     with open(results_folder + 'engine player.txt', "a") as f:
         f.write('\n')
-        f.write(" ".join([str(x) for x in ind])+'\n')
+        f.write(" ".join([str(x) for x in ind]) + '\n')
         f.write(" ".join([str(x) for x in tmp]) + '\n')
