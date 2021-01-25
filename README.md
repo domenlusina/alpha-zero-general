@@ -1,6 +1,6 @@
 # Alpha Zero General
 
-This project is based on the [Alpha Zero General](https://github.com/suragnair/alpha-zero-general) implementation. We experimented with the idea of using domain knowledge to improve learning for Connect Four. We introduced domain knowledge in the form of an expert heuristic. The expert heuristic was only used in the learning phase of the AlphaZero algorithm.
+This project is based on the [Alpha Zero General](https://github.com/suragnair/alpha-zero-general) implementation. We experimented with the idea of using domain knowledge to improve learning. We introduced domain knowledge in the form of an expert heuristic. The expert heuristic was only used in the learning phase of the AlphaZero algorithm. AlphaZero was applied on game of Connect Four.
 
 ## Heuristics used
 
